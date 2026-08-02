@@ -7,33 +7,100 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Top Navigation Bar -->
     <header class="navbar">
-        <div class="nav-left"><h1 class="logo">StevenTV</h1></div>
-        <div class="nav-right"><button class="admin-btn" id="open-admin-btn">🔒 Admin</button></div>
+        <div class="nav-left">
+            <h1 class="logo">StevenTV</h1>
+            <input type="text" id="search-bar" placeholder="🔍 Search titles, genres...">
+        </div>
+        <div class="nav-right">
+            <button class="admin-btn" id="open-admin-btn">🔒 Admin Dashboard</button>
+        </div>
     </header>
+
+    <!-- Immersive Cinema Hero Display Section -->
     <main class="hero-cinema">
-        <div class="video-wrapper"><video id="main-video" controls></video></div>
-        <div class="hero-details"><h2 id="movie-title">Select a Movie</h2><p id="movie-description"></p></div>
+        <div class="video-stage">
+            <div class="video-wrapper">
+                <video id="main-video" controls crossorigin="anonymous">
+                    <track id="video-track" label="English" kind="subtitles" srclang="en" default>
+                </video>
+            </div>
+        </div>
+        
+        <div class="hero-details">
+            <div class="meta-row">
+                <span id="movie-category" class="badge">Genre</span>
+                <span class="ultra-hd">4K Ultra HD</span>
+            </div>
+            <h2 id="movie-title">Featured Selection</h2>
+            <p id="movie-description">Select any movie title below to instantly begin smooth high-definition playback with active subtitles streams.</p>
+        </div>
     </main>
-    <section class="catalog-section"><div class="movie-grid" id="movie-grid"></div></section>
-    <section class="request-section">
-        <h3>Request a Movie</h3>
-        <form id="request-form">
-            <input type="text" id="req-title" placeholder="Movie Title" required>
-            <button type="submit">Send Request</button>
+
+    <!-- Main Movie Rows -->
+    <section class="catalog-section">
+        <h3 class="section-title">Trending Blockbusters</h3>
+        <div class="movie-grid" id="movie-grid"></div>
+    </section>
+
+    <!-- Request a Movie Form Section -->
+    <section class="request-section" style="max-width: 1300px; margin: 40px auto; padding: 0 4%;">
+        <h3 class="section-title">Request a Movie</h3>
+        <form id="request-form" style="display: flex; gap: 10px; max-width: 400px; margin-top: 15px;">
+            <input type="text" id="req-title" placeholder="What movie should Steven upload next?" required style="flex-grow: 1; background: #222; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px;">
+            <button type="submit" style="background: #e50914; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Send Request</button>
         </form>
     </section>
+
+    <!-- Secure Content Upload Manager Panel Modal -->
     <div class="admin-modal" id="admin-modal">
         <div class="modal-content">
-            <button id="close-admin-btn">&times;</button>
-            <form id="upload-form">
-                <input type="text" id="form-title" placeholder="Title" required>
-                <input type="url" id="form-video" placeholder="Permanent .mp4 URL" required>
-                <input type="url" id="form-thumb" placeholder="Poster URL" required>
-                <button type="submit">Add Movie</button>
+            <div class="modal-header">
+                <h3>StevenTV Secure Console</h3>
+                <button id="close-admin-btn" class="close-btn">&times;</button>
+            </div>
+            
+            <!-- Password Authorization Sub-view -->
+            <div id="admin-auth-zone">
+                <p class="auth-prompt">Enter administrative passcode to unlock deployment access:</p>
+                <input type="password" id="admin-pass-input" placeholder="••••••••">
+                <button id="btn-authorize" class="submit-btn">Verify Credentials</button>
+                <p id="auth-error-msg" class="error-text"></p>
+            </div>
+
+            <!-- Core Content Creation Matrix -->
+            <form id="upload-form" class="hidden">
+                <div class="form-group">
+                    <label>Movie Title</label>
+                    <input type="text" id="form-title" required placeholder="e.g., 72 Hours">
+                </div>
+                <div class="form-group">
+                    <label>Category / Genre</label>
+                    <input type="text" id="form-category" required placeholder="e.g., Action / Comedy">
+                </div>
+                <div class="form-group">
+                    <label>Archive.org Movie Link (.mp4 URL)</label>
+                    <input type="url" id="form-video" required placeholder="https://archive.org">
+                </div>
+                <div class="form-group">
+                    <label>Poster Thumbnail Image URL</label>
+                    <input type="url" id="form-thumb" required placeholder="https://ibb.co">
+                </div>
+                <div class="form-group">
+                    <label>Archive.org Subtitles URL (.vtt Link)</label>
+                    <input type="url" id="form-subtitles" placeholder="https://archive.org">
+                </div>
+                <div class="form-group">
+                    <label>Synopses Description</label>
+                    <textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn security-clearance">Deploy Film Nationwide</button>
             </form>
         </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
