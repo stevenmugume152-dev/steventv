@@ -3,91 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StevenTV - Pure Local Premium Cinema</title>
+    <title>StevenTV - Watch Free Movies & TV Shows</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Top Navigation Bar -->
-    <header class="navbar">
-        <div class="nav-left">
-            <h1 class="logo">StevenTV</h1>
-            <input type="text" id="search-bar" placeholder="🔍 Search locally deployed files...">
-        </div>
-        <div class="nav-right">
-            <button class="admin-btn" id="open-admin-btn">🔒 Admin Dashboard</button>
-        </div>
-    </header>
+    <!-- Main Application Wrapper Grid -->
+    <div class="app-container">
 
-    <!-- Immersive Cinema Hero Display Section -->
-    <main class="hero-cinema">
-        <div class="video-stage">
-            <div class="video-wrapper">
-                <video id="main-video" controls>
-                    <track id="video-track" label="English" kind="subtitles" srclang="en" default>
-                </video>
+        <!-- Left Sidebar Navigation Panel Menu -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="menu-toggle" id="menu-toggle">☰</div>
+                <h1 class="logo">Steven<span>TV</span></h1>
             </div>
-        </div>
-        
-        <div class="hero-details">
-            <div class="meta-row">
-                <span id="movie-category" class="badge">Genre</span>
-                <span class="ultra-hd">Offline Blob Mode</span>
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-category="all">🏠 Home</a>
+                <a href="#" class="menu-item" data-category="TV Show">📺 TV Show</a>
+                <a href="#" class="menu-item" data-category="Movie">🎬 Movie</a>
+                <a href="#" class="menu-item" data-category="Animation">🎌 Anime & Animation</a>
+                <a href="#" class="menu-item" data-category="Sport">⚽ Sport Live</a>
+                <a href="#" class="menu-item" id="open-admin-btn">🔑 Admin Console</a>
+            </nav>
+        </aside>
+
+        <!-- Right Content Main Display canvas -->
+        <main class="main-content">
+            
+            <!-- Global Top Navigation Controls bar -->
+            <header class="top-nav">
+                <div class="search-box">
+                    <input type="text" id="search-bar" placeholder="Search movies/ TV Shows...">
+                </div>
+                <div class="top-nav-actions">
+                    <button class="app-download-btn">📲 Download App</button>
+                    <span class="lang-selector">🌐 ENGLISH</span>
+                </div>
+            </header>
+
+            <!-- Video Cinema Projection Stage -->
+            <div class="cinema-stage hidden" id="cinema-stage">
+                <div class="video-wrapper">
+                    <video id="main-video" controls>
+                        <track id="video-track" label="English" kind="subtitles" srclang="en" default>
+                    </video>
+                    <button class="close-cinema-btn" id="close-cinema-btn">✕ Close Player</button>
+                </div>
+                <div class="cinema-details">
+                    <h2 id="cinema-title">Movie Title</h2>
+                    <p id="cinema-description">Description summary tags info.</p>
+                </div>
             </div>
-            <h2 id="movie-title">Featured Selection</h2>
-            <p id="movie-description">Select any movie title from your offline catalog grid row below to start high-definition playback using IndexedDB binary assets streams.</p>
-        </div>
-    </main>
 
-    <!-- Main Movie Rows -->
-    <section class="catalog-section">
-        <h3 class="section-title">Trending Blockbusters</h3>
-        <div class="movie-grid" id="movie-grid"></div>
-    </section>
+            <!-- Main Featured Billboard Hero Banner Slider Carousel -->
+            <section class="hero-slider" id="hero-slider">
+                <button class="slider-arrow prev" id="hero-prev">‹</button>
+                <div class="hero-slide-container" id="hero-slide-container">
+                    <!-- Dynamic Featured Canvas Content Blocks will Inject here -->
+                </div>
+                <button class="slider-arrow next" id="hero-next">›</button>
+                <div class="slider-dots" id="hero-dots"></div>
+            </section>
 
-    <!-- Secure Content Upload Manager Panel Modal -->
+            <!-- Media Carousel Row Sections Categories Showcase -->
+            <section class="rows-container">
+                <div class="row-section" id="section-anime">
+                    <h3 class="row-title">Animes <span class="more-link">More ›</span></h3>
+                    <div class="row-scroll-container" id="grid-anime"></div>
+                </div>
+
+                <div class="row-section" id="section-movies">
+                    <h3 class="row-title">Blockbuster Movies <span class="more-link">More ›</span></h3>
+                    <div class="row-scroll-container" id="grid-movies"></div>
+                </div>
+
+                <div class="row-section" id="section-tvshows">
+                    <h3 class="row-title">TV Shows Series <span class="more-link">More ›</span></h3>
+                    <div class="row-scroll-container" id="grid-tvshows"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Administrative Management Password Entry Popup Modal Overlay -->
     <div class="admin-modal" id="admin-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>StevenTV Local Content Vault</h3>
+                <h3>StevenTV Management Matrix</h3>
                 <button id="close-admin-btn" class="close-btn">&times;</button>
             </div>
-            
-            <!-- Password Authorization Sub-view -->
             <div id="admin-auth-zone">
                 <p class="auth-prompt">Enter administrative passcode to unlock deployment access:</p>
                 <input type="password" id="admin-pass-input" placeholder="••••••••">
                 <button id="btn-authorize" class="submit-btn">Verify Credentials</button>
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
-
-            <!-- Core Content Creation Matrix -->
             <form id="upload-form" class="hidden">
+                <div class="form-group"><label>Movie Title</label><input type="text" id="form-title" required placeholder="e.g., The Walking Dead"></div>
                 <div class="form-group">
-                    <label>Movie Title</label>
-                    <input type="text" id="form-title" required placeholder="e.g., 72 Hours">
+                    <label>Layout System Category Selection</label>
+                    <select id="form-category">
+                        <option value="Animation">Anime & Animation</option>
+                        <option value="Movie">Movie Blockbuster</option>
+                        <option value="TV Show">TV Show Series</option>
+                        <option value="Sport">Sport Live Stream</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label>Category / Genre</label>
-                    <input type="text" id="form-category" required placeholder="e.g., Comedy">
-                </div>
-                <div class="form-group">
-                    <label>Select Movie File From PC (.mp4)</label>
-                    <input type="file" id="form-video" accept="video/mp4" required>
-                </div>
-                <div class="form-group">
-                    <label>Select Poster Thumbnail Image (.jpg / .png)</label>
-                    <input type="file" id="form-thumb" accept="image/*" required>
-                </div>
-                <div class="form-group">
-                    <label>Select Subtitles File From PC (.vtt)</label>
-                    <input type="file" id="form-subtitles" accept=".vtt">
-                </div>
-                <div class="form-group">
-                    <label>Synopses Description</label>
-                    <textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea>
-                </div>
-                <button type="submit" class="submit-btn security-clearance">Save Permanently To Browser Vault</button>
+                <div class="form-group"><label>Select Movie File From PC (.mp4)</label><input type="file" id="form-video" accept="video/mp4" required></div>
+                <div class="form-group"><label>Select Poster Thumbnail Image (.jpg / .png)</label><input type="file" id="form-thumb" accept="image/*" required></div>
+                <div class="form-group"><label>Select Subtitles File From PC (.vtt)</label><input type="file" id="form-subtitles" accept=".vtt"></div>
+                <div class="form-group"><label>Synopses Description details</label><textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea></div>
+                <button type="submit" class="submit-btn">Save Permanently To Browser Vault</button>
             </form>
         </div>
     </div>
