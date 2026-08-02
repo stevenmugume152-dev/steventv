@@ -69,7 +69,7 @@
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
 
-            <!-- Core Content Creation Matrix (Hidden Until Verified) -->
+            <!-- Core Content Creation Matrix -->
             <form id="upload-form" class="hidden">
                 <div class="form-group">
                     <label>Movie Title</label>
@@ -80,16 +80,16 @@
                     <input type="text" id="form-category" required placeholder="e.g., Action / Sci-Fi">
                 </div>
                 <div class="form-group">
-                    <label>Direct Stream URL (.mp4 file link)</label>
-                    <input type="url" id="form-video" required placeholder="https://domain.com">
+                    <label>Select Movie File From PC (.mp4)</label>
+                    <input type="file" id="form-video" accept="video/mp4" required>
                 </div>
                 <div class="form-group">
-                    <label>Poster Thumbnail Image URL</label>
-                    <input type="url" id="form-thumb" required placeholder="https://domain.com">
+                    <label>Select Poster Thumbnail Image (.jpg / .png)</label>
+                    <input type="file" id="form-thumb" accept="image/*" required>
                 </div>
                 <div class="form-group">
-                    <label>Subtitles File URL (.vtt tracking data)</label>
-                    <input type="url" id="form-subtitles" placeholder="https://domain.com">
+                    <label>Select Subtitles File From PC (.vtt)</label>
+                    <input type="file" id="form-subtitles" accept=".vtt">
                 </div>
                 <div class="form-group">
                     <label>Synopses Description</label>
