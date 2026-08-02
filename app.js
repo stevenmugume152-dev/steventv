@@ -1,4 +1,4 @@
-// 1. Initialize IndexedDB Engine Settings (Permanent Local Database Binary Core)
+// 1. Initialize IndexedDB Engine Settings
 const DB_NAME = "StevenTVPremiumDB";
 const DB_VERSION = 3; 
 const STORE_NAME = "media_library";
@@ -39,12 +39,10 @@ const gridMovies = document.getElementById('grid-movies');
 const gridTvShows = document.getElementById('grid-tvshows');
 const emptyStateNotice = document.getElementById('empty-state-notice');
 
-// TV Room Subcomponents Selectors
 const tvSeriesRoom = document.getElementById('tv-series-room');
 const seasonFilterBar = document.getElementById('season-filter-bar');
 const episodeScrollerGrid = document.getElementById('episode-scroller-grid');
 
-// Modals Nodes Layouts
 const adminModal = document.getElementById('admin-modal');
 const openAdminBtn = document.getElementById('open-admin-btn');
 const closeAdminBtn = document.getElementById('close-admin-btn');
@@ -56,10 +54,8 @@ const uploadForm = document.getElementById('upload-form');
 const formCategory = document.getElementById('form-category');
 const seriesMetadataFields = document.getElementById('series-metadata-fields');
 
-// Global Filtering Matrix State Counters
 let currentSelectedLayout = "all";
 let currentSelectedGenre = "all";
-
 let currentSlideIndex = 0;
 let slideInterval = null;
 let activeStreams = [];
@@ -78,7 +74,6 @@ formCategory.addEventListener('change', () => {
     }
 });
 
-// 3. Central Media Deployment Router Engine
 function targetMediaLoad(movie) {
     clearStreams();
     cinemaStage.classList.remove('hidden');
@@ -117,7 +112,6 @@ function executeDirectPlayback(episodeItem) {
     mainVideo.play();
 }
 
-// 4. Series Hub Expansion Panel Logic Tree
 function setupTvSeriesRoomConsole(activeItem) {
     tvSeriesRoom.classList.remove('hidden');
     seasonFilterBar.innerHTML = '';
@@ -126,7 +120,7 @@ function setupTvSeriesRoomConsole(activeItem) {
     const collection = cachedAllItems.filter(i => i.title.toLowerCase().trim() === activeItem.title.toLowerCase().trim());
     const seasonsList = [...new Set(collection.map(i => parseInt(i.season || 1)))].sort((a, b) => a - b);
 
-    seasonsList.forEach((seasonNum, index) => {
+    seasonsList.forEach((seasonNum) => {
         const btn = document.createElement('button');
         btn.className = `season-btn ${seasonNum === parseInt(activeItem.season || 1) ? 'active' : ''}`;
         btn.textContent = `Season ${seasonNum}`;
@@ -143,7 +137,6 @@ function setupTvSeriesRoomConsole(activeItem) {
 
 function renderEpisodesForSeason(seasonNum, collection, activeId) {
     episodeScrollerGrid.innerHTML = '';
-    
     const episodes = collection.filter(i => parseInt(i.season || 1) === seasonNum).sort((a, b) => parseInt(a.episode || 1) - parseInt(b.episode || 1));
 
     episodes.forEach(ep => {
@@ -168,7 +161,6 @@ closeCinemaBtn.addEventListener('click', () => {
     clearStreams();
 });
 
-// 5. Render Dashboard Rows Interface Channels 
 function loadDashboard() {
     if (!db) return;
     const transaction = db.transaction([STORE_NAME], "readonly");
@@ -177,7 +169,6 @@ function loadDashboard() {
 
     getAllRequest.onsuccess = () => {
         cachedAllItems = getAllRequest.result;
-        
         const sliderShowcase = [];
         const titlesSeen = new Set();
         
@@ -188,7 +179,6 @@ function loadDashboard() {
             }
         });
 
-        // FIXED: Corrected spelling to buildHeroSlider to clear the ReferenceError crash
         buildHeroSlider(sliderShowcase.slice(0, 3)); 
         applyCombinedFilters();
     };
@@ -219,7 +209,6 @@ function applyCombinedFilters() {
     populateRows(rowPresentationItems);
 }
 
-// 6. Billboard Hero Carousel Slider Operations Mechanics
 function buildHeroSlider(featuredItems) {
     heroSlideContainer.innerHTML = '';
     heroDots.innerHTML = '';
@@ -266,5 +255,20 @@ function buildHeroSlider(featuredItems) {
 function showSlide(index) {
     const slides = document.querySelectorAll('.slide-item');
     const dots = document.querySelectorAll('.dot');
+    if (slides.length === 0) return;
 
-    if (slides.length === 0) return;if (index >= slides.length) index = 0;if (index < 0) index = slides.length - 1;slides[currentSlideIndex].classList.remove('active');dots[currentSlideIndex].github = "cleared";dots[currentSlideIndex].classList.remove('active');currentSlideIndex = index;slides[currentSlideIndex].classList.add('active');dots[currentSlideIndex].classList.add('active');}function startAutoSlide() {slideInterval = setInterval(() => showSlide(currentSlideIndex + 1), 6000);}heroNext.addEventListener('click', () => { showSlide(currentSlideIndex + 1); clearInterval(slideInterval); startAutoSlide(); });heroPrev.addEventListener('click', () => { showSlide(currentSlideIndex - 1); clearInterval(slideInterval); startAutoSlide(); });function populateRows(items) {gridAnime.innerHTML = '';gridMovies.innerHTML = '';gridTvShows.innerHTML = '';let hasAnime = false, hasMovies = false, hasTv = false;items.forEach(item => {const card = document.createElement('div');card.className = 'movie-card';const cardThumb = URL.createObjectURL(item.thumbBlob);activeStreams.push(cardThumb);card.innerHTML = <img class="movie-thumbnail" src="${cardThumb}"> <span class="card-badge">FR</span> <button class="delete-movie-btn" data-id="${item.id}">✕</button> <div class="movie-info"> <div class="movie-card-title">${item.title}</div> <div class="movie-card-cat">${item.genre || 'General'} • ${item.category}</div> </div>;card.addEventListener('click', (e) => {if (e.target.classList.contains('delete-movie-btn')) return;targetMediaLoad(item);});card.querySelector('.delete-movie-btn').addEventListener('click', (e) => {e.stopPropagation();if (confirm(Remove this asset entry for "${item.title}" from your StevenTV database?)) {deleteItem(item.id);}});if (item.category === "Animation") { gridAnime.appendChild(card); hasAnime = true; }else if (item.category === "Movie") { gridMovies.appendChild(card); hasMovies = true; }else if (item.category === "TV Show") { gridTvShows.appendChild(card); hasTv = true; }});const sectionAnime = document.getElementById('section-anime');const sectionMovies = document.getElementById('section-movies');const sectionTvshows = document.getElementById('section-tvshows');sectionAnime.style.display = (hasAnime) ? 'block' : 'none';sectionMovies.style.display = (hasMovies) ? 'block' : 'none';sectionTvshows.style.display = (hasTv) ? 'block' : 'none';if (!hasAnime && !hasMovies && !hasTv) {emptyStateNotice.classList.remove('hidden');} else {emptyStateNotice.classList.add('hidden');}}function deleteItem(id) {const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.delete(id).onsuccess = () => loadDashboard();}// 7. Security Panel Click Activation Mechanismconst STEVENTV_SECRET = "admin123";openAdminBtn.addEventListener('click', (e) => {e.preventDefault();adminModal.classList.add('active');uploadForm.classList.add('hidden');adminAuthZone.classList.remove('hidden');adminPassInput.value = "";authErrorMsg.textContent = "";});closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));btnAuthorize.addEventListener('click', () => {if (adminPassInput.value === STEVENTV_SECRET) {adminAuthZone.classList.add('hidden');uploadForm.classList.remove('hidden');} else {authErrorMsg.textContent = "Invalid StevenTV Console Key. Clearance denied.";}});uploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoFile = document.getElementById('form-video').files[0];const thumbFile = document.getElementById('form-thumb').files[0];const subsFile = document.getElementById('form-subtitles').files[0];if (!videoFile || !thumbFile) {alert("Please ensure video and thumbnail components are fully selected.");return;}const movieEntry = {id: "media-" + Date.now(),title: document.getElementById('form-title').value.trim(),category: document.getElementById('form-category').value,genre: document.getElementById('form-genre').value,season: document.getElementById('form-season').value || "1",episode: document.getElementById('form-episode').value || "1",description: document.getElementById('form-desc').value.trim(),videoBlob: videoFile,thumbBlob: thumbFile,subsBlob: subsFile || null};const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();uploadForm.reset();adminModal.classList.remove('active');alert("${movieEntry.title}" saved successfully to StevenTV!);};});// 8. Dual Matrix Filters Event Connectors (Sidebar Layouts + Genre Ribbon)document.querySelectorAll('.menu-item').forEach(item => {item.addEventListener('click', (e) => {if (item.id === "open-admin-btn") return;e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));item.classList.add('active');currentSelectedLayout = item.getAttribute('data-layout');if (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}applyCombinedFilters();});});document.querySelectorAll('.genre-pill').forEach(pill => {pill.addEventListener('click', () => {document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));pill.classList.add('active');currentSelectedGenre = pill.getAttribute('data-genre');if (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}applyCombinedFilters();});});searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();if (term === "") {applyCombinedFilters();return;}const matches = cachedAllItems.filter(m => m.title.toLowerCase().includes(term));populateRows(matches);});
+    if (index >= slides.length) index = 0;
+    if (index < 0) index = slides.length - 1;
+
+    slides[currentSlideIndex].classList.remove('active');
+    dots[currentSlideIndex].classList.remove('active');
+
+    currentSlideIndex = index;
+
+    slides[currentSlideIndex].classList.add('active');
+    dots[currentSlideIndex].classList.add('active');
+}
+
+function startAutoSlide() {
+
+    slideInterval = setInterval(() => showSlide(currentSlideIndex + 1), 6000);}heroNext.addEventListener('click', () => { showSlide(currentSlideIndex + 1); clearInterval(slideInterval); startAutoSlide(); });heroPrev.addEventListener('click', () => { showSlide(currentSlideIndex - 1); clearInterval(slideInterval); startAutoSlide(); });function populateRows(items) {gridAnime.innerHTML = '';gridMovies.innerHTML = '';gridTvShows.innerHTML = '';let hasAnime = false, hasMovies = false, hasTv = false;items.forEach(item => {const card = document.createElement('div');card.className = 'movie-card';const cardThumb = URL.createObjectURL(item.thumbBlob);activeStreams.push(cardThumb);card.innerHTML = <img class="movie-thumbnail" src="${cardThumb}"> <span class="card-badge">FR</span> <button class="delete-movie-btn" data-id="${item.id}">✕</button> <div class="movie-info"> <div class="movie-card-title">${item.title}</div> <div class="movie-card-cat">${item.genre || 'General'} • ${item.category}</div> </div>;card.addEventListener('click', (e) => {if (e.target.classList.contains('delete-movie-btn')) return;targetMediaLoad(item);});card.querySelector('.delete-movie-btn').addEventListener('click', (e) => {e.stopPropagation();if (confirm(Remove this asset entry for "${item.title}" from your StevenTV database?)) {deleteItem(item.id);}});if (item.category === "Animation") { gridAnime.appendChild(card); hasAnime = true; }else if (item.category === "Movie") { gridMovies.appendChild(card); hasMovies = true; }else if (item.category === "TV Show") { gridTvShows.appendChild(card); hasTv = true; }});const sectionAnime = document.getElementById('section-anime');const sectionMovies = document.getElementById('section-movies');const sectionTvshows = document.getElementById('section-tvshows');sectionAnime.style.display = (hasAnime) ? 'block' : 'none';sectionMovies.style.display = (hasMovies) ? 'block' : 'none';sectionTvshows.style.display = (hasTv) ? 'block' : 'none';if (!hasAnime && !hasMovies && !hasTv) {emptyStateNotice.classList.remove('hidden');} else {emptyStateNotice.classList.add('hidden');}}function deleteItem(id) {const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.delete(id).onsuccess = () => loadDashboard();}const STEVENTV_SECRET = "admin123";openAdminBtn.addEventListener('click', (e) => {e.preventDefault();adminModal.classList.add('active');uploadForm.classList.add('hidden');adminAuthZone.classList.remove('hidden');adminPassInput.value = "";authErrorMsg.textContent = "";});closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));btnAuthorize.addEventListener('click', () => {if (adminPassInput.value === STEVENTV_SECRET) {adminAuthZone.classList.add('hidden');uploadForm.classList.remove('hidden');} else {authErrorMsg.textContent = "Invalid StevenTV Console Key. Clearance denied.";}});uploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoFile = document.getElementById('form-video').files[0];const thumbFile = document.getElementById('form-thumb').files[0];const subsFile = document.getElementById('form-subtitles').files[0];if (!videoFile || !thumbFile) {alert("Please ensure video and thumbnail components are fully selected.");return;}const movieEntry = {id: "media-" + Date.now(),title: document.getElementById('form-title').value.trim(),category: document.getElementById('form-category').value,genre: document.getElementById('form-genre').value,season: document.getElementById('form-season').value || "1",episode: document.getElementById('form-episode').value || "1",description: document.getElementById('form-desc').value.trim(),videoBlob: videoFile,thumbBlob: thumbFile,subsBlob: subsFile || null};const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();uploadForm.reset();adminModal.classList.remove('active');alert("${movieEntry.title}" saved successfully to StevenTV!);};});document.querySelectorAll('.menu-item').forEach(item => {item.addEventListener('click', (e) => {if (item.id === "open-admin-btn") return;e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));item.classList.add('active');currentSelectedLayout = item.getAttribute('data-layout');if (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}applyCombinedFilters();});});document.querySelectorAll('.genre-pill').forEach(pill => {pill.addEventListener('click', () => {document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));pill.classList.add('active');currentSelectedGenre = pill.getAttribute('data-genre');if (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}applyCombinedFilters();});});searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();if (term === "") {applyCombinedFilters();return;}const matches = cachedAllItems.filter(m => m.title.toLowerCase().includes(term));populateRows(matches);});
