@@ -22,6 +22,9 @@
                 <a href="#" class="menu-item" data-layout="Movie">🎬 Movie Blockbuster</a>
                 <a href="#" class="menu-item" data-layout="Animation">🎌 Anime & Animation</a>
                 <a href="#" class="menu-item" data-layout="Sport">⚽ Sport Live</a>
+                
+                <!-- SECURE RETAIL ENTRY POINT LINK BUTTON -->
+                <a href="#" class="menu-item" id="open-admin-btn" style="margin-top: 40px; border-top: 1px solid #28313b; color: #00df89;">🔑 Admin Portal</a>
             </nav>
         </aside>
 
@@ -65,12 +68,8 @@
                 <!-- TV Show Room Episode Management Hub Slider Layer -->
                 <div class="tv-series-room hidden" id="tv-series-room">
                     <h4 class="room-header-title">🎞️ Episode Selection Console</h4>
-                    <div class="season-filter-bar" id="season-filter-bar">
-                        <!-- Season navigation buttons generate dynamically here -->
-                    </div>
-                    <div class="episode-scroller-grid" id="episode-scroller-grid">
-                        <!-- Episodes list channels load here -->
-                    </div>
+                    <div class="season-filter-bar" id="season-filter-bar"></div>
+                    <div class="episode-scroller-grid" id="episode-scroller-grid"></div>
                 </div>
             </div>
 
@@ -84,7 +83,6 @@
 
             <!-- Media Carousel Row Sections Categories Showcase -->
             <section class="rows-container" id="rows-container">
-                
                 <div class="row-section" id="section-anime">
                     <h3 class="row-title">Anime Collection <span class="more-link">More ›</span></h3>
                     <div class="row-scroll-container" id="grid-anime"></div>
@@ -100,7 +98,6 @@
                     <div class="row-scroll-container" id="grid-tvshows"></div>
                 </div>
 
-                <!-- Fallback Screen Template Node Placeholder -->
                 <div class="empty-state-notice hidden" id="empty-state-notice">
                     <div class="notice-icon">📂</div>
                     <h4>No Content Available</h4>
@@ -127,7 +124,7 @@
             <form id="upload-form" class="hidden">
                 <div class="form-group">
                     <label>Series / Movie Base Title</label>
-                    <input type="text" id="form-title" required placeholder="e.g., The Walking Dead (Use exact identical title for multiple episodes)">
+                    <input type="text" id="form-title" required placeholder="e.g., The Walking Dead">
                 </div>
                 <div class="form-row-split">
                     <div class="form-group">
@@ -151,7 +148,6 @@
                     </div>
                 </div>
 
-                <!-- TV Series Room Metadata Matrix Blocks Selector Elements -->
                 <div class="form-row-split multi-episode-fields" id="series-metadata-fields">
                     <div class="form-group">
                         <label>Season Number</label>
@@ -166,7 +162,7 @@
                 <div class="form-group"><label>Select Video File From PC (.mp4)</label><input type="file" id="form-video" accept="video/mp4" required></div>
                 <div class="form-group"><label>Select Poster Thumbnail Image (.jpg / .png)</label><input type="file" id="form-thumb" accept="image/*" required></div>
                 <div class="form-group"><label>Select Subtitles File From PC (.vtt)</label><input type="file" id="form-subtitles" accept=".vtt"></div>
-                <div class="form-group"><label>Synopses Description Details</label><textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea></div>
+                <div class="form-group"><label>Synopses Description Details</label><textarea id="form-desc" rows="3" required placeholder="Provide an engaging summary..."></textarea></div>
                 
                 <button type="submit" class="submit-btn">Save Permanently To StevenTV Vault</button>
             </form>
