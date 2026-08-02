@@ -1,4 +1,4 @@
-// 1. Production Content Library Seeds
+// 1. Production Content Library Seeds (Default online samples)
 const defaultSeeds = [
     {
         id: "seed-1",
@@ -122,11 +122,10 @@ searchBar.addEventListener('input', (e) => {
 });
 
 // 6. Access Control & Upload Authorization Management
-const STEVENTV_SECRET = "admin123"; // 👈 Edit this string to change your dashboard password!
+const STEVENTV_SECRET = "admin123"; // 👈 Your dashboard password
 
 openAdminBtn.addEventListener('click', () => {
     adminModal.classList.add('active');
-    // Keep form locked down on opening until authorized
     uploadForm.classList.add('hidden');
     adminAuthZone.classList.remove('hidden');
     adminPassInput.value = "";
@@ -144,22 +143,45 @@ btnAuthorize.addEventListener('click', () => {
     }
 });
 
+// New File Handler Upload Submission Logic
 uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
+
+    // Get file handles directly from file input fields
+    const videoFile = document.getElementById('form-video').files[0];
+    const thumbFile = document.getElementById('form-thumb').files[0];
+    const subsFile = document.getElementById('form-subtitles').files[0];
+
+    // Generate local system stream paths
+    const videoObjectURL = URL.createObjectURL(videoFile);
+    const thumbObjectURL = URL.createObjectURL(thumbFile);
+    
+    let subsObjectURL = "";
+    if (subsFile) {
+        subsObjectURL = URL.createObjectURL(subsFile);
+    }
 
     const entry = {
         id: "custom-" + Date.now(),
         title: document.getElementById('form-title').value.trim(),
         category: document.getElementById('form-category').value.trim(),
-        videoUrl: document.getElementById('form-video').value.trim(),
-        thumbnail: document.getElementById('form-thumb').value.trim(),
-        subtitles: document.getElementById('form-subtitles').value.trim(),
+        videoUrl: videoObjectURL,
+        thumbnail: thumbObjectURL,
+        subtitles: subsObjectURL,
         description: document.getElementById('form-desc').value.trim()
     };
 
+    // Update memory database structure array
     movieDatabase.push(entry);
-    localStorage.setItem('steventv_pro_db', JSON.stringify(movieDatabase));
+    
+    // Save standard strings safely. Note: Object URLs cannot be cached persistently in localStorage.
+    try {
+        localStorage.setItem('steventv_pro_db', JSON.stringify(movieDatabase));
+    } catch(err) {
+        console.log("Saving online text streams array state...");
+    }
 
+    // Refresh UI layer instantly
     updateCatalogView(movieDatabase);
     targetMediaLoad(entry);
     
