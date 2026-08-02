@@ -652,3 +652,16 @@ video {
     font-size: 13px;
     color: #858f99;
 }
+/* Activates the Admin Passcode Overlay Layer */
+.admin-modal.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    display: flex !important;
+}
+
+/* Enhances the Form Layout Inputs Matrix */
+.form-row-split {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+}
