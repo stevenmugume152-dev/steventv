@@ -143,16 +143,22 @@ btnAuthorize.addEventListener('click', () => {
     }
 });
 
-// New File Handler Upload Submission Logic
+// Fixed File Handler Upload Submission Logic
 uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // Get file handles directly from file input fields
+    // Get the first file from the input array selection safely
     const videoFile = document.getElementById('form-video').files[0];
     const thumbFile = document.getElementById('form-thumb').files[0];
     const subsFile = document.getElementById('form-subtitles').files[0];
 
-    // Generate local system stream paths
+    // Ensure files are selected before running object creator engines
+    if (!videoFile || !thumbFile) {
+        alert("Please make sure to select both a movie file and a poster image.");
+        return;
+    }
+
+    // Generate local stream URLs
     const videoObjectURL = URL.createObjectURL(videoFile);
     const thumbObjectURL = URL.createObjectURL(thumbFile);
     
@@ -174,13 +180,6 @@ uploadForm.addEventListener('submit', (e) => {
     // Update memory database structure array
     movieDatabase.push(entry);
     
-    // Save standard strings safely. Note: Object URLs cannot be cached persistently in localStorage.
-    try {
-        localStorage.setItem('steventv_pro_db', JSON.stringify(movieDatabase));
-    } catch(err) {
-        console.log("Saving online text streams array state...");
-    }
-
     // Refresh UI layer instantly
     updateCatalogView(movieDatabase);
     targetMediaLoad(entry);
