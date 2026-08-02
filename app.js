@@ -1,4 +1,4 @@
-// 1. Initialize IndexedDB Database Engine Settings
+// 1. Initialize IndexedDB Engine Settings
 const DB_NAME = "StevenTVPremiumDB";
 const DB_VERSION = 1;
 const STORE_NAME = "media_library";
@@ -39,13 +39,16 @@ const gridTvShows = document.getElementById('grid-tvshows');
 
 // Modals Nodes
 const adminModal = document.getElementById('admin-modal');
-const openAdminBtn = document.getElementById('open-admin-btn');
 const closeAdminBtn = document.getElementById('close-admin-btn');
 const adminAuthZone = document.getElementById('admin-auth-zone');
 const adminPassInput = document.getElementById('admin-pass-input');
 const btnAuthorize = document.getElementById('btn-authorize');
 const authErrorMsg = document.getElementById('auth-error-msg');
 const uploadForm = document.getElementById('upload-form');
+
+// Global Filtering Matrix State Counters
+let currentSelectedLayout = "all";
+let currentSelectedGenre = "all";
 
 let currentSlideIndex = 0;
 let slideInterval = null;
@@ -98,13 +101,28 @@ function loadDashboard() {
 
     getAllRequest.onsuccess = () => {
         const allItems = getAllRequest.result;
-        buildHeroSlider(allItems.slice(-3)); // Show the latest 3 items in the banner
-        populateRows(allItems);
+        buildHeroSlider(allItems.slice(-3)); 
+        applyCombinedFilters(allItems);
     };
 }
 
+function applyCombinedFilters(items) {
+    let filtered = items;
+
+    // Filter 1: Sidebar Layout Check
+    if (currentSelectedLayout !== "all") {
+        filtered = filtered.filter(item => item.category === currentSelectedLayout);
+    }
+
+    // Filter 2: Ribbon Genre Classification Check
+    if (currentSelectedGenre !== "all") {
+        filtered = filtered.filter(item => item.genre === currentSelectedGenre);
+    }
+
+    populateRows(filtered);
+}
+
 function populateRows(items) {
-    // Clear out standard grid templates containers channels
     gridAnime.innerHTML = '';
     gridMovies.innerHTML = '';
     gridTvShows.innerHTML = '';
@@ -122,7 +140,7 @@ function populateRows(items) {
             <button class="delete-movie-btn" data-id="${item.id}">✕</button>
             <div class="movie-info">
                 <div class="movie-card-title">${item.title}</div>
-                <div class="movie-card-cat">2026 • ${item.category}</div>
+                <div class="movie-card-cat">${item.genre || 'General'} • ${item.category}</div>
             </div>
         `;
 
@@ -138,13 +156,11 @@ function populateRows(items) {
             }
         });
 
-        // Route item to its matching horizontal row layout channel
         if (item.category === "Animation") { gridAnime.appendChild(card); hasAnime = true; }
         else if (item.category === "Movie") { gridMovies.appendChild(card); hasMovies = true; }
         else if (item.category === "TV Show") { gridTvShows.appendChild(card); hasTv = true; }
     });
 
-    // Hide or show row blocks depending on database data
     document.getElementById('section-anime').style.display = hasAnime ? 'block' : 'none';
     document.getElementById('section-movies').style.display = hasMovies ? 'block' : 'none';
     document.getElementById('section-tvshows').style.display = hasTv ? 'block' : 'none';
@@ -166,7 +182,6 @@ function buildHeroSlider(featuredItems) {
         const slide = document.createElement('div');
         slide.className = `slide-item ${index === 0 ? 'active' : ''}`;
         
-        // Use poster block data as slider background layout cover
         const bgUrl = URL.createObjectURL(item.thumbBlob);
         slide.style.backgroundImage = `url('${bgUrl}')`;
         
@@ -175,7 +190,7 @@ function buildHeroSlider(featuredItems) {
             <div class="slide-content">
                 <div class="slide-tag">💥 Featured ${item.category}</div>
                 <h2 class="slide-title">${item.title}</h2>
-                <div class="slide-meta">Audio: Français / English • Subtitles Active</div>
+                <div class="slide-meta">${item.genre || 'General'} • Audio: Français / English</div>
                 <p style="color: #bbb; font-size:14px; margin-bottom:20px;">${item.description.slice(0, 140)}...</p>
                 <button class="app-download-btn play-slide-btn" style="background-color:#00df89;">▶ Watch Now</button>
             </div>
@@ -184,7 +199,6 @@ function buildHeroSlider(featuredItems) {
         slide.querySelector('.play-slide-btn').addEventListener('click', () => targetMediaLoad(item));
         heroSlideContainer.appendChild(slide);
 
-        // Generate matching selector dots controls indicators
         const dot = document.createElement('div');
         dot.className = `dot ${index === 0 ? 'active' : ''}`;
         dot.addEventListener('click', () => showSlide(index));
@@ -225,25 +239,29 @@ function deleteItem(id) {
     store.delete(id).onsuccess = () => loadDashboard();
 }
 
-// 6. Security Panel & Selection Hooks Controller Mechanics
+// 6. Security Panel Admin Controller Mechanics
 const STEVENTV_SECRET = "admin123";
 
-openAdminBtn.addEventListener('click', (e) => { 
-    e.preventDefault(); 
-    adminModal.classList.add('active'); 
-    uploadForm.classList.add('hidden'); 
-    adminAuthZone.classList.remove('hidden'); 
-    adminPassInput.value = ""; 
-    authErrorMsg.textContent = ""; 
+// HIDDEN DOORKNOB: Admin panel opens ONLY when pressing Ctrl + Shift + A
+window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        adminModal.classList.add('active');
+        uploadForm.classList.add('hidden');
+        adminAuthZone.classList.remove('hidden');
+        adminPassInput.value = "";
+        authErrorMsg.textContent = "";
+    }
 });
+
 closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));
 
 btnAuthorize.addEventListener('click', () => {
-    if (adminPassInput.value === STEVENTV_SECRET) { 
-        adminAuthZone.classList.add('hidden'); 
-        uploadForm.classList.remove('hidden'); 
-    } else { 
-        authErrorMsg.textContent = "Invalid StevenTV Console Key. Clearance denied."; 
+    if (adminPassInput.value === STEVENTV_SECRET) {
+        adminAuthZone.classList.add('hidden');
+        uploadForm.classList.remove('hidden');
+    } else {
+        authErrorMsg.textContent = "Invalid StevenTV Console Key. Clearance denied.";
     }
 });
 
@@ -257,13 +275,5 @@ uploadForm.addEventListener('submit', (e) => {
     const movieEntry = {
         id: "media-" + Date.now(),
         title: document.getElementById('form-title').value.trim(),
-        category: document.getElementById('form-category').value,
-        description: document.getElementById('form-desc').value.trim(),
-        videoBlob: videoFiles,
-        thumbBlob: thumbFiles,
-        subsBlob: subsFiles || null
-    };
 
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-
-    const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();targetMediaLoad(movieEntry);uploadForm.reset();adminModal.classList.remove('active');};});// 7. Sidebar Category Menu Filters and Top Bar Searchdocument.querySelectorAll('.menu-item').forEach(item => {item.addEventListener('click', (e) => {if(item.id === "open-admin-btn") return;document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));item.classList.add('active');const cat = item.getAttribute('data-category');const transaction = db.transaction([STORE_NAME], "readonly");const getAllRequest = transaction.objectStore(STORE_NAME).getAll();getAllRequest.onsuccess = () => {const items = getAllRequest.result;if (cat === "all") {populateRows(items);heroSlider.style.display = 'block';} else {const filtered = items.filter(i => i.category === cat);populateRows(filtered);heroSlider.style.display = 'none'; // Hide billboard hero when browsing specific rows}};});});searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();const transaction = db.transaction([STORE_NAME], "readonly");const getAllRequest = transaction.objectStore(STORE_NAME).getAll();getAllRequest.onsuccess = () => {const matches = getAllRequest.result.filter(m => m.title.toLowerCase().includes(term));populateRows(matches);};});
+        category: document.getElementById('form-category').value,genre: document.getElementById('form-genre').value, // Saved directly to entry payloaddescription: document.getElementById('form-desc').value.trim(),videoBlob: videoFiles,thumbBlob: thumbFiles,subsBlob: subsFiles || null};const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();targetMediaLoad(movieEntry);uploadForm.reset();adminModal.classList.remove('active');};});// 7. Dynamic Matrix Filters (Sidebar + Genre Ribbon)document.querySelectorAll('.menu-item').forEach(item => {item.addEventListener('click', (e) => {e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));item.classList.add('active');currentSelectedLayout = item.getAttribute('data-layout');// Control Billboard display rules based on layout selectionif (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}const transaction = db.transaction([STORE_NAME], "readonly");transaction.objectStore(STORE_NAME).getAll().onsuccess = (e) => {applyCombinedFilters(e.target.result);};});});document.querySelectorAll('.genre-pill').forEach(pill => {pill.addEventListener('click', () => {document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));pill.classList.add('active');currentSelectedGenre = pill.getAttribute('data-genre');if (currentSelectedLayout === "all" && currentSelectedGenre === "all") {heroSlider.style.display = 'block';} else {heroSlider.style.display = 'none';}const transaction = db.transaction([STORE_NAME], "readonly");transaction.objectStore(STORE_NAME).getAll().onsuccess = (e) => {applyCombinedFilters(e.target.result);};});});searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();const transaction = db.transaction([STORE_NAME], "readonly");const getAllRequest = transaction.objectStore(STORE_NAME).getAll();getAllRequest.onsuccess = () => {const matches = getAllRequest.result.filter(m => m.title.toLowerCase().includes(term));populateRows(matches);};});
