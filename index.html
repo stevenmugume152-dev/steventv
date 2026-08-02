@@ -18,20 +18,20 @@
             </div>
             <nav class="sidebar-menu">
                 <a href="#" class="menu-item active" data-layout="all">🏠 Home</a>
-                <a href="#" class="menu-item" data-layout="TV Show">📺 TV Show</a>
-                <a href="#" class="menu-item" data-layout="Movie">🎬 Movie</a>
+                <a href="#" class="menu-item" data-layout="TV Show">📺 TV Show Series</a>
+                <a href="#" class="menu-item" data-layout="Movie">🎬 Movie Blockbuster</a>
                 <a href="#" class="menu-item" data-layout="Animation">🎌 Anime & Animation</a>
                 <a href="#" class="menu-item" data-layout="Sport">⚽ Sport Live</a>
             </nav>
         </aside>
 
-        <!-- Right Content Main Display canvas -->
+        <!-- Right Content Main Display Canvas -->
         <main class="main-content">
             
             <!-- Global Top Navigation Controls bar -->
             <header class="top-nav">
                 <div class="search-box">
-                    <input type="text" id="search-bar" placeholder="Search movies/ TV Shows...">
+                    <input type="text" id="search-bar" placeholder="Search movies, TV shows, or anime...">
                 </div>
                 <div class="top-nav-actions">
                     <button class="app-download-btn">📲 Download App</button>
@@ -61,6 +61,17 @@
                     <h2 id="cinema-title">Movie Title</h2>
                     <p id="cinema-description">Description summary tags info.</p>
                 </div>
+
+                <!-- TV Show Room Episode Management Hub Slider Layer -->
+                <div class="tv-series-room hidden" id="tv-series-room">
+                    <h4 class="room-header-title">🎞️ Episode Selection Console</h4>
+                    <div class="season-filter-bar" id="season-filter-bar">
+                        <!-- Season navigation buttons generate dynamically here -->
+                    </div>
+                    <div class="episode-scroller-grid" id="episode-scroller-grid">
+                        <!-- Episodes list channels load here -->
+                    </div>
+                </div>
             </div>
 
             <!-- Main Featured Billboard Hero Banner Slider Carousel -->
@@ -72,9 +83,10 @@
             </section>
 
             <!-- Media Carousel Row Sections Categories Showcase -->
-            <section class="rows-container">
+            <section class="rows-container" id="rows-container">
+                
                 <div class="row-section" id="section-anime">
-                    <h3 class="row-title">Animes <span class="more-link">More ›</span></h3>
+                    <h3 class="row-title">Anime Collection <span class="more-link">More ›</span></h3>
                     <div class="row-scroll-container" id="grid-anime"></div>
                 </div>
 
@@ -84,8 +96,15 @@
                 </div>
 
                 <div class="row-section" id="section-tvshows">
-                    <h3 class="row-title">TV Shows Series <span class="more-link">More ›</span></h3>
+                    <h3 class="row-title">TV Show Series <span class="more-link">More ›</span></h3>
                     <div class="row-scroll-container" id="grid-tvshows"></div>
+                </div>
+
+                <!-- Fallback Screen Template Node Placeholder -->
+                <div class="empty-state-notice hidden" id="empty-state-notice">
+                    <div class="notice-icon">📂</div>
+                    <h4>No Content Available</h4>
+                    <p>There are currently no videos uploaded matching this layout and genre choice.</p>
                 </div>
             </section>
         </main>
@@ -104,31 +123,51 @@
                 <button id="btn-authorize" class="submit-btn">Verify Credentials</button>
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
+            
             <form id="upload-form" class="hidden">
-                <div class="form-group"><label>Movie Title</label><input type="text" id="form-title" required placeholder="e.g., The Walking Dead"></div>
                 <div class="form-group">
-                    <label>Layout System Category</label>
-                    <select id="form-category">
-                        <option value="Movie">Movie Blockbuster</option>
-                        <option value="TV Show">TV Show Series</option>
-                        <option value="Animation">Anime & Animation</option>
-                        <option value="Sport">Sport Live Stream</option>
-                    </select>
+                    <label>Series / Movie Base Title</label>
+                    <input type="text" id="form-title" required placeholder="e.g., The Walking Dead (Use exact identical title for multiple episodes)">
                 </div>
-                <div class="form-group">
-                    <label>Genre Tag Classification</label>
-                    <select id="form-genre">
-                        <option value="Action">Action</option>
-                        <option value="Comedy">Comedy</option>
-                        <option value="Drama">Drama</option>
-                        <option value="Horror">Horror</option>
-                        <option value="Thriller">Thriller</option>
-                    </select>
+                <div class="form-row-split">
+                    <div class="form-group">
+                        <label>Layout System Category</label>
+                        <select id="form-category">
+                            <option value="Movie">Movie Blockbuster</option>
+                            <option value="TV Show">TV Show Series</option>
+                            <option value="Animation">Anime & Animation</option>
+                            <option value="Sport">Sport Live Stream</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Genre Tag Classification</label>
+                        <select id="form-genre">
+                            <option value="Action">Action</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Drama">Drama</option>
+                            <option value="Horror">Horror</option>
+                            <option value="Thriller">Thriller</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group"><label>Select Movie File From PC (.mp4)</label><input type="file" id="form-video" accept="video/mp4" required></div>
+
+                <!-- TV Series Room Metadata Matrix Blocks Selector Elements -->
+                <div class="form-row-split multi-episode-fields" id="series-metadata-fields">
+                    <div class="form-group">
+                        <label>Season Number</label>
+                        <input type="number" id="form-season" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Episode Number</label>
+                        <input type="number" id="form-episode" value="1" min="1">
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Select Video File From PC (.mp4)</label><input type="file" id="form-video" accept="video/mp4" required></div>
                 <div class="form-group"><label>Select Poster Thumbnail Image (.jpg / .png)</label><input type="file" id="form-thumb" accept="image/*" required></div>
                 <div class="form-group"><label>Select Subtitles File From PC (.vtt)</label><input type="file" id="form-subtitles" accept=".vtt"></div>
-                <div class="form-group"><label>Synopses Description details</label><textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea></div>
+                <div class="form-group"><label>Synopses Description Details</label><textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea></div>
+                
                 <button type="submit" class="submit-btn">Save Permanently To StevenTV Vault</button>
             </form>
         </div>
