@@ -9,26 +9,31 @@
 <body>
 
     <div class="app-container">
-        <!-- Sidebar Navigation Drawer Menu panel -->
+        <!-- Sidebar Drawer Controls Navigation menu Panel -->
         <aside class="sidebar">
             <h1 class="logo">Steven<span>TV</span></h1>
             <nav class="sidebar-menu">
-                <a href="#" class="menu-item active">🏠 Home Catalog</a>
-                <a href="#" class="menu-item" id="open-admin-btn" style="margin-top: 20px; color: #00df89;">🔑 Admin Console</a>
+                <a href="#" class="menu-item active" data-filter="all">🏠 All Catalog</a>
+                <a href="#" class="menu-item" data-filter="Movie">🎬 Movies</a>
+                <a href="#" class="menu-item" data-filter="TV Show">📺 TV Shows</a>
+                <a href="#" class="menu-item" data-filter="Animation">🎌 Anime</a>
+                <a href="#" class="menu-item" id="open-admin-btn" style="margin-top: 30px; color: #00df89;">🔑 Admin Console</a>
             </nav>
         </aside>
 
-        <!-- Right Content Main Display Canvas -->
+        <!-- Main Display Arena Canvas -->
         <main class="main-content">
-            <!-- Global Top Navigation bar Controls -->
             <header class="top-nav">
-                <input type="text" id="search-bar" placeholder="Search your catalog...">
+                <input type="text" id="search-bar" placeholder="Search your local catalog...">
             </header>
 
-            <!-- Video Cinema Projection Stage -->
+            <!-- Video Projections Theater Stage -->
             <div class="cinema-stage hidden" id="cinema-stage">
                 <div class="video-wrapper">
-                    <video id="main-video" controls></video>
+                    <video id="main-video" controls>
+                        <!-- Dynamic subtitling slot container track link -->
+                        <track id="video-track" label="English Captions" kind="subtitles" srclang="en" default>
+                    </video>
                     <button class="close-cinema-btn" id="close-cinema-btn">✕ Close Player</button>
                 </div>
                 <div class="cinema-details">
@@ -37,9 +42,9 @@
                 </div>
             </div>
 
-            <!-- Media Collection Showcase Rows Grid -->
+            <!-- Dynamic Media Grid Presentation Slots Channels -->
             <section class="rows-container">
-                <h3 style="margin-bottom: 15px;">Your Movie Collection</h3>
+                <h3 id="row-dynamic-title" style="margin-bottom: 15px;">Your Movie Collection</h3>
                 <div class="row-scroll-container" id="grid-movies"></div>
             </section>
         </main>
@@ -53,7 +58,6 @@
                 <button id="close-admin-btn" class="close-btn">&times;</button>
             </div>
             
-            <!-- Auth validation screening Zone -->
             <div id="admin-auth-zone">
                 <p style="margin-bottom: 10px;">Enter passcode:</p>
                 <input type="password" id="admin-pass-input" placeholder="••••••••">
@@ -61,25 +65,36 @@
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
             
-            <!-- Upload Management Interface console deployment form -->
             <form id="upload-form" class="hidden">
                 <div class="form-group">
                     <label>Movie Title</label>
                     <input type="text" id="form-title" required>
                 </div>
                 <div class="form-group">
-                    <label>Select Movie (.mp4)</label>
+                    <label>Content Layout Category Mode</label>
+                    <select id="form-category" style="width:100%; background:#1c2229; color:white; padding:10px; border-radius:6px; border:1px solid #28313b;">
+                        <option value="Movie">Movie Blockbuster</option>
+                        <option value="TV Show">TV Show Series</option>
+                        <option value="Animation">Anime & Animation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Movie Video File (.mp4)</label>
                     <input type="file" id="form-video" accept="video/mp4" required>
                 </div>
                 <div class="form-group">
-                    <label>Select Thumbnail (.jpg/.png)</label>
+                    <label>Select Poster Thumbnail Graphic (.jpg / .png)</label>
                     <input type="file" id="form-thumb" accept="image/*" required>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
+                    <label>Select Subtitles Closed Captions File Optional (.vtt)</label>
+                    <input type="file" id="form-subtitles" accept=".vtt">
+                </div>
+                <div class="form-group">
+                    <label>Synopses Description details</label>
                     <textarea id="form-desc" rows="3" required></textarea>
                 </div>
-                <button type="submit" class="submit-btn">Save Movie</button>
+                <button type="submit" class="submit-btn">Save Media File to Local Storage</button>
             </form>
         </div>
     </div>
