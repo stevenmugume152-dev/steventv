@@ -1,20 +1,28 @@
-// 1. Initial Sample Media Library Data
-const defaultSeeds = [
-    {
-        id: "seed-1",
-        title: "Tears of Steel (Sci-Fi Ultra HD)",
-        category: "Sci-Fi / Action",
-        description: "Explore a stunning futuristic dystopian world where a task force of computational scientists must deploy hyper-advanced technological counter-measures to save earth from renegade mechanical engines.",
-        thumbnail: "https://wikimedia.org",
-        videoUrl: "https://googleapis.com",
-        subtitles: "https://githubusercontent.com"
+// 1. Initialize IndexedDB Engine Settings
+const DB_NAME = "StevenTVLocalDB";
+const DB_VERSION = 1;
+const STORE_NAME = "movies";
+let db = null;
+
+const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+request.onupgradeneeded = (e) => {
+    let database = e.target.result;
+    if (!database.objectStoreNames.contains(STORE_NAME)) {
+        database.createObjectStore(STORE_NAME, { keyPath: "id" });
     }
-];
+};
 
-// Load your movies library from persistent localStorage cache
-let movieDatabase = JSON.parse(localStorage.getItem('steventv_pro_db')) || defaultSeeds;
+request.onsuccess = (e) => {
+    db = e.target.result;
+    loadCatalogFromDB();
+};
 
-// 2. DOM Selectors Mapping
+request.onerror = (e) => {
+    console.error("IndexedDB initialization database error: ", e.target.error);
+};
+
+// 2. DOM Elements Mapping
 const mainVideo = document.getElementById('main-video');
 const videoTrack = document.getElementById('video-track');
 const movieTitle = document.getElementById('movie-title');
@@ -22,9 +30,7 @@ const movieCategory = document.getElementById('movie-category');
 const movieDescription = document.getElementById('movie-description');
 const movieGrid = document.getElementById('movie-grid');
 const searchBar = document.getElementById('search-bar');
-const requestForm = document.getElementById('request-form');
 
-// Admin Management Nodes
 const adminModal = document.getElementById('admin-modal');
 const openAdminBtn = document.getElementById('open-admin-btn');
 const closeAdminBtn = document.getElementById('close-admin-btn');
@@ -34,57 +40,87 @@ const btnAuthorize = document.getElementById('btn-authorize');
 const authErrorMsg = document.getElementById('auth-error-msg');
 const uploadForm = document.getElementById('upload-form');
 
-// 3. Central Media Deployment Engine
+// Keep track of runtime revocable object streams URLs to avoid system memory leaks
+let activeBlobURLs = [];
+
+function clearActiveStreams() {
+    activeBlobURLs.forEach(url => URL.revokeObjectURL(url));
+    activeBlobURLs = [];
+}
+
+// 3. Central Media Renderer Pipeline
 function targetMediaLoad(movie) {
-    mainVideo.src = movie.videoUrl;
+    clearActiveStreams();
+
+    // Convert stored file blobs back into runnable browser video streams elements
+    const videoStream = URL.createObjectURL(movie.videoBlob);
+    const thumbStream = URL.createObjectURL(movie.thumbBlob);
+    activeBlobURLs.push(videoStream, thumbStream);
+
+    mainVideo.src = videoStream;
     movieTitle.textContent = movie.title;
     movieCategory.textContent = movie.category;
     movieDescription.textContent = movie.description;
 
-    if (movie.subtitles && movie.subtitles.trim() !== "") {
-        videoTrack.src = movie.subtitles;
+    if (movie.subsBlob) {
+        const subsStream = URL.createObjectURL(movie.subsBlob);
+        activeBlobURLs.push(subsStream);
+        videoTrack.src = subsStream;
         videoTrack.mode = "showing";
     } else {
         videoTrack.src = "";
         videoTrack.mode = "disabled";
     }
-    
+
     mainVideo.load();
-    mainVideo.play().catch(() => console.log("Buffering video segment streams context..."));
+    mainVideo.play().catch(() => console.log("Buffering local browser binary video blocks..."));
 }
 
-function updateCatalogView(sourceArray) {
+function loadCatalogFromDB() {
+    if (!db) return;
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+    const getAllRequest = store.getAll();
+
+    getAllRequest.onsuccess = () => {
+        renderGrid(getAllRequest.result);
+    };
+}
+
+function renderGrid(moviesList) {
     movieGrid.innerHTML = '';
-    if(sourceArray.length === 0) {
-        movieGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #555; padding: 40px 0;">No active broadcasts found matching that search string.</p>`;
+    if (moviesList.length === 0) {
+        movieGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #555; padding: 40px 0;">No offline files stored in your local vault yet.</p>`;
         return;
     }
 
-    sourceArray.forEach((movie) => {
+    moviesList.forEach(movie => {
         const card = document.createElement('div');
         card.className = 'movie-card';
+        
+        // Render thumbnail graphic wrapper safely
+        const tempThumbURL = URL.createObjectURL(movie.thumbBlob);
+        
         card.innerHTML = `
-            <img class="movie-thumbnail" src="${movie.thumbnail}" alt="Thumbnail">
+            <img class="movie-thumbnail" src="${tempThumbURL}" alt="Thumbnail">
             <button class="delete-movie-btn" data-id="${movie.id}">❌</button>
             <div class="movie-info">
                 <div class="movie-card-title">${movie.title}</div>
                 <div class="movie-card-cat">${movie.category}</div>
             </div>
         `;
-        
-        // Load target clip on main layout click
+
         card.addEventListener('click', (e) => {
             if (e.target.classList.contains('delete-movie-btn')) return;
             targetMediaLoad(movie);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // Attach function for individual delete management
         const deleteBtn = card.querySelector('.delete-movie-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if(confirm(`Are you sure you want to remove "${movie.title}"?`)) {
-                deleteMovieEntry(movie.id);
+            if (confirm(`Remove "${movie.title}" from your permanent browser vault?`)) {
+                deleteMovieFromDB(movie.id);
             }
         });
 
@@ -92,24 +128,18 @@ function updateCatalogView(sourceArray) {
     });
 }
 
-function deleteMovieEntry(id) {
-    movieDatabase = movieDatabase.filter(movie => movie.id !== id);
-    localStorage.setItem('steventv_pro_db', JSON.stringify(movieDatabase));
-    updateCatalogView(movieDatabase);
+function deleteMovieFromDB(id) {
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    const deleteRequest = store.delete(id);
+
+    deleteRequest.onsuccess = () => {
+        loadCatalogFromDB();
+    };
 }
 
-// 4. Query Search Filter Pipeline
-searchBar.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase().trim();
-    const matches = movieDatabase.filter(m => 
-        m.title.toLowerCase().includes(term) || 
-        m.category.toLowerCase().includes(term)
-    );
-    updateCatalogView(matches);
-});
-
-// 5. Access Control & Upload Authorization Management
-const STEVENTV_SECRET = "admin123"; 
+// 4. Input Authorization Controller Mechanics
+const STEVENTV_SECRET = "admin123";
 
 openAdminBtn.addEventListener('click', () => {
     adminModal.classList.add('active');
@@ -122,7 +152,7 @@ openAdminBtn.addEventListener('click', () => {
 closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));
 
 btnAuthorize.addEventListener('click', () => {
-    if(adminPassInput.value === STEVENTV_SECRET) {
+    if (adminPassInput.value === STEVENTV_SECRET) {
         adminAuthZone.classList.add('hidden');
         uploadForm.classList.remove('hidden');
     } else {
@@ -130,42 +160,62 @@ btnAuthorize.addEventListener('click', () => {
     }
 });
 
+// 5. Binary File Compilation Upload Engine
 uploadForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const entry = {
-        id: "custom-" + Date.now(),
+    const videoFiles = document.getElementById('form-video').files;
+    const thumbFiles = document.getElementById('form-thumb').files;
+    const subsFiles = document.getElementById('form-subtitles').files;
+
+    if (videoFiles.length === 0 || thumbFiles.length === 0) {
+        alert("Please make sure to select both a movie file and a poster artwork configuration block.");
+        return;
+    }
+
+    // Capture files from the form inputs
+    const videoBlob = videoFiles[0];
+    const thumbBlob = thumbFiles[0];
+    const subsBlob = subsFiles.length > 0 ? subsFiles[0] : null;
+
+    const movieEntry = {
+        id: "local-" + Date.now(),
         title: document.getElementById('form-title').value.trim(),
         category: document.getElementById('form-category').value.trim(),
-        videoUrl: document.getElementById('form-video').value.trim(),
-        thumbnail: document.getElementById('form-thumb').value.trim(),
-        subtitles: document.getElementById('form-subtitles').value.trim(), 
-        description: document.getElementById('form-desc').value.trim()
+        description: document.getElementById('form-desc').value.trim(),
+        videoBlob: videoBlob, // Saves raw movie binary data permanently onto your computer drive
+        thumbBlob: thumbBlob, // Saves raw picture binary data permanently onto your computer drive
+        subsBlob: subsBlob    // Saves raw text subtitle data permanently onto your computer drive
     };
 
-    movieDatabase.push(entry);
-    localStorage.setItem('steventv_pro_db', JSON.stringify(movieDatabase));
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    const addRequest = store.add(movieEntry);
 
-    updateCatalogView(movieDatabase);
-    targetMediaLoad(entry);
-    
-    uploadForm.reset();
-    adminModal.classList.remove('active');
+    addRequest.onsuccess = () => {
+        loadCatalogFromDB();
+        targetMediaLoad(movieEntry);
+        uploadForm.reset();
+        adminModal.classList.remove('active');
+    };
+
+    addRequest.onerror = (err) => {
+        alert("Database write error. Check if your computer has enough free space.");
+        console.error(err);
+    };
 });
 
-// 6. User Request Form Execution Email Router
-requestForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const requestedTitle = document.getElementById('req-title').value.trim();
-    const emailSubject = encodeURIComponent("StevenTV - New Movie Request Recommendation");
-    const emailBody = encodeURIComponent(`Hi Steven,\n\nI would love to watch this film on StevenTV:\n\nMovie Title: ${requestedTitle}\n\nPlease upload it soon!`);
-    
-    window.location.href = `mailto:stevenmugume152@://gmail.com{emailSubject}&body=${emailBody}`;
-    requestForm.reset();
-});
+// 6. Realtime Filter Pipelines
+searchBar.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+    const getAllRequest = store.getAll();
 
-// 7. Initialization Manifest 
-if (movieDatabase.length > 0) {
-    targetMediaLoad(movieDatabase);
-}
-updateCatalogView(movieDatabase);
+    getAllRequest.onsuccess = () => {
+        const matches = getAllRequest.result.filter(m => 
+            m.title.toLowerCase().includes(term) || m.category.toLowerCase().includes(term)
+        );
+        renderGrid(matches);
+    };
+});

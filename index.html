@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StevenTV - Stream Free Premium Cinema</title>
+    <title>StevenTV - Pure Local Premium Cinema</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <header class="navbar">
         <div class="nav-left">
             <h1 class="logo">StevenTV</h1>
-            <input type="text" id="search-bar" placeholder="🔍 Search titles, genres...">
+            <input type="text" id="search-bar" placeholder="🔍 Search locally deployed files...">
         </div>
         <div class="nav-right">
             <button class="admin-btn" id="open-admin-btn">🔒 Admin Dashboard</button>
@@ -23,7 +23,7 @@
     <main class="hero-cinema">
         <div class="video-stage">
             <div class="video-wrapper">
-                <video id="main-video" controls crossorigin="anonymous">
+                <video id="main-video" controls>
                     <track id="video-track" label="English" kind="subtitles" srclang="en" default>
                 </video>
             </div>
@@ -32,10 +32,10 @@
         <div class="hero-details">
             <div class="meta-row">
                 <span id="movie-category" class="badge">Genre</span>
-                <span class="ultra-hd">4K Ultra HD</span>
+                <span class="ultra-hd">Offline Blob Mode</span>
             </div>
             <h2 id="movie-title">Featured Selection</h2>
-            <p id="movie-description">Select any movie title below to instantly begin smooth high-definition playback with active subtitles streams.</p>
+            <p id="movie-description">Select any movie title from your offline catalog grid row below to start high-definition playback using IndexedDB binary assets streams.</p>
         </div>
     </main>
 
@@ -45,20 +45,11 @@
         <div class="movie-grid" id="movie-grid"></div>
     </section>
 
-    <!-- Request a Movie Form Section -->
-    <section class="request-section" style="max-width: 1300px; margin: 40px auto; padding: 0 4%;">
-        <h3 class="section-title">Request a Movie</h3>
-        <form id="request-form" style="display: flex; gap: 10px; max-width: 400px; margin-top: 15px;">
-            <input type="text" id="req-title" placeholder="What movie should Steven upload next?" required style="flex-grow: 1; background: #222; border: 1px solid #333; color: white; padding: 10px; border-radius: 4px;">
-            <button type="submit" style="background: #e50914; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Send Request</button>
-        </form>
-    </section>
-
     <!-- Secure Content Upload Manager Panel Modal -->
     <div class="admin-modal" id="admin-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>StevenTV Secure Console</h3>
+                <h3>StevenTV Local Content Vault</h3>
                 <button id="close-admin-btn" class="close-btn">&times;</button>
             </div>
             
@@ -78,25 +69,25 @@
                 </div>
                 <div class="form-group">
                     <label>Category / Genre</label>
-                    <input type="text" id="form-category" required placeholder="e.g., Action / Comedy">
+                    <input type="text" id="form-category" required placeholder="e.g., Comedy">
                 </div>
                 <div class="form-group">
-                    <label>Archive.org Movie Link (.mp4 URL)</label>
-                    <input type="url" id="form-video" required placeholder="https://archive.org">
+                    <label>Select Movie File From PC (.mp4)</label>
+                    <input type="file" id="form-video" accept="video/mp4" required>
                 </div>
                 <div class="form-group">
-                    <label>Poster Thumbnail Image URL</label>
-                    <input type="url" id="form-thumb" required placeholder="https://ibb.co">
+                    <label>Select Poster Thumbnail Image (.jpg / .png)</label>
+                    <input type="file" id="form-thumb" accept="image/*" required>
                 </div>
                 <div class="form-group">
-                    <label>Archive.org Subtitles URL (.vtt Link)</label>
-                    <input type="url" id="form-subtitles" placeholder="https://archive.org">
+                    <label>Select Subtitles File From PC (.vtt)</label>
+                    <input type="file" id="form-subtitles" accept=".vtt">
                 </div>
                 <div class="form-group">
                     <label>Synopses Description</label>
                     <textarea id="form-desc" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea>
                 </div>
-                <button type="submit" class="submit-btn security-clearance">Deploy Film Nationwide</button>
+                <button type="submit" class="submit-btn security-clearance">Save Permanently To Browser Vault</button>
             </form>
         </div>
     </div>
