@@ -115,6 +115,12 @@ video {
     height: 100%;
 }
 
+video::cue {
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 16px;
+}
+
 .dismiss-player-btn {
     position: absolute;
     top: 15px;
@@ -129,22 +135,22 @@ video {
     z-index: 10;
 }
 
-.theater-text-details {
-    padding: 20px;
+.theater-text-details { 
+    padding: 20px; 
 }
 
-.theater-text-details h2 {
-    font-size: 22px;
-    margin-bottom: 6px;
+.theater-text-details h2 { 
+    font-size: 22px; 
+    margin-bottom: 6px; 
 }
 
-.theater-text-details p {
-    color: #858f99;
-    font-size: 14px;
-    line-height: 1.4;
+.theater-text-details p { 
+    color: #858f99; 
+    font-size: 14px; 
+    line-height: 1.4; 
 }
 
-/* WRAPPING MULTI-ROW FLEX GRID DESIGN */
+/* REINFORCED WRAPPING MULTI-ROW FLEX GRID DESIGN */
 .media-flex-grid {
     display: flex;
     flex-wrap: wrap;
@@ -152,9 +158,9 @@ video {
     margin-top: 15px;
 }
 
-/* Movie Title Presentation Cards */
+/* Movie Title Presentation Cards Layout */
 .movie-card {
-    flex: 0 1 calc(20% - 16px); /* Fixes a clean 5-column grid loop that scales downwards when full */
+    flex: 0 1 calc(20% - 16px); /* Cascades downwards into beautiful 5-column rows dynamically when full */
     min-width: 165px;
     background-color: #13171c;
     border-radius: 10px;
@@ -165,15 +171,15 @@ video {
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.movie-card:hover {
-    transform: translateY(-4px);
-    border-color: #00df89;
+.movie-card:hover { 
+    transform: translateY(-4px); 
+    border-color: #00df89; 
 }
 
-.movie-thumbnail {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
+.movie-thumbnail { 
+    width: 100%; 
+    aspect-ratio: 2 / 3; 
+    object-fit: cover; 
 }
 
 .delete-record-btn {
@@ -189,14 +195,25 @@ video {
     border-radius: 4px;
     cursor: pointer;
     z-index: 5;
-    transition: background 0.2s;
 }
 
-.delete-record-btn:hover { background-color: #ff1424; }
-.movie-info { padding: 12px; }
-.movie-card-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.delete-record-btn:hover { 
+    background-color: #ff1424; 
+}
 
-/* Fallback Notice Banner Empty Placeholder */
+.movie-info { 
+    padding: 12px; 
+}
+
+.movie-card-title { 
+    font-size: 13px; 
+    font-weight: 700; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+/* Fallback Empty Placeholder notice */
 .empty-notice-banner {
     width: 100%;
     text-align: center;
@@ -207,9 +224,20 @@ video {
     margin: 20px auto;
 }
 
-.fallback-icon { font-size: 40px; margin-bottom: 12px; }
-.empty-notice-banner h4 { font-size: 18px; margin-bottom: 6px; }
-.empty-notice-banner p { font-size: 13px; color: #858f99; }
+.fallback-icon { 
+    font-size: 40px; 
+    margin-bottom: 12px; 
+}
+
+.empty-notice-banner h4 { 
+    font-size: 18px; 
+    margin-bottom: 6px; 
+}
+
+.empty-notice-banner p { 
+    font-size: 13px; 
+    color: #858f99; 
+}
 
 /* Administrative Upload Modal Panel Popup Overlay Layout */
 .admin-overlay-modal {
@@ -222,70 +250,72 @@ video {
     z-index: 500;
 }
 
-.admin-overlay-modal.active {
-    display: flex !important;
+.admin-overlay-modal.active { 
+    display: flex !important; 
 }
 
-.modal-box {
-    background-color: #13171c;
-    border: 1px solid #1c2229;
-    padding: 30px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+.modal-box { 
+    background-color: #13171c; 
+    border: 1px solid #1c2229; 
+    padding: 30px; 
+    border-radius: 12px; 
+    width: 100%; 
+    max-width: 480px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
 }
 
-.modal-header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #1c2229;
-    padding-bottom: 10px;
+.modal-header-bar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    border-bottom: 1px solid #1c2229; 
+    padding-bottom: 10px; 
 }
 
-.close-modal-x {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
+.close-modal-x { 
+    background: none; 
+    border: none; 
+    color: white; 
+    font-size: 24px; 
+    cursor: pointer; 
 }
 
-.form-input-group {
-    margin-bottom: 15px;
+.form-input-group { 
+    margin-bottom: 15px; 
 }
 
-.form-input-group label {
-    display: block;
-    font-size: 12px;
-    color: #858f99;
-    margin-bottom: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
+.form-input-group label { 
+    display: block; 
+    font-size: 12px; 
+    color: #858f99; 
+    margin-bottom: 5px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
 }
 
-.form-input-group input, .form-input-group select, .form-input-group textarea {
-    width: 100%;
-    background-color: #1c2229;
-    border: 1px solid #28313b;
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
+.form-input-group input, .form-input-group select, .form-input-group textarea { 
+    width: 100%; 
+    background-color: #1c2229; 
+    border: 1px solid #28313b; 
+    color: white; 
+    padding: 10px; 
+    border-radius: 6px; 
 }
 
-.modal-submit-btn {
-    background-color: #00df89;
-    color: #000;
-    font-weight: 700;
-    border: none;
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-top: 10px;
+.modal-submit-btn { 
+    background-color: #00df89; 
+    color: #000; 
+    font-weight: 700; 
+    border: none; 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-size: 14px; 
+    margin-top: 10px; 
 }
 
-.hidden { display: none !important; }
+.hidden { 
+    display: none !important; 
+}

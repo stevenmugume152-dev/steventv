@@ -3,53 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StevenTV - Easy Streaming Vault</title>
+    <title>StevenTV - Permanent Local Streaming Vault</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-wrapper">
-        <!-- Left Fixed Navigation Drawer -->
+        <!-- Left Side Dashboard Drawer Links Navigation panel -->
         <aside class="sidebar">
-            <h1 class="logo">Steven<span>TV</span></h1>
+            <h1 class="logo">Mugu<span>TV</span></h1>
             <nav class="navigation-links">
-                <a href="#" class="nav-item active" data-filter="all">🏠 Home Catalog</a>
+                <a href="#" class="nav-item active" data-filter="all">🏠 All Content</a>
                 <a href="#" class="nav-item" data-filter="Movie">🎬 Movies Only</a>
                 <a href="#" class="nav-item" data-filter="Series">📺 TV Shows & Series</a>
                 <a href="#" class="nav-item" id="admin-toggle-btn" style="margin-top: 40px; color: #00df89;">⚙️ Admin Upload</a>
             </nav>
         </aside>
 
-        <!-- Right Content Main Display Screen -->
+        <!-- Right Side Main Content Projection Canvas -->
         <main class="main-stage">
             <header class="top-nav-bar">
-                <input type="text" id="catalog-search" placeholder="Type to search your collection instantly...">
+                <input type="text" id="catalog-search" placeholder="Type to search your offline vault instantly...">
             </header>
 
-            <!-- Video Player Theater Canvas -->
+            <!-- Video Player Theater Canvas Box Screen -->
             <div class="player-theater-room hidden" id="video-theater-stage">
                 <div class="video-container-box">
                     <video id="theater-player" controls autocomplete="off">
-                        <!-- Dedicated subtitle closed captions container slot link track -->
                         <track id="video-track" label="English Captions" kind="subtitles" srclang="en" default>
                     </video>
                     <button class="dismiss-player-btn" id="close-theater-btn">✕ Close Player</button>
                 </div>
                 <div class="theater-text-details">
-                    <h2 id="theater-movie-title">Movie Title Placeholder</h2>
-                    <p id="theater-movie-desc">Description details logline metadata template information container.</p>
+                    <h2 id="theater-movie-title">Movie Title</h2>
+                    <p id="theater-movie-desc">Description synopsis tag details.</p>
                 </div>
             </div>
 
-            <!-- Dynamic Media Grid Container Section -->
+            <!-- Media Flexible Wrapping Grid Section Canvas Channels -->
             <section class="media-section">
                 <h3 id="current-grid-header-title">All Uploaded Content</h3>
                 <div class="media-flex-grid" id="catalog-grid-display"></div>
                 
                 <div class="empty-notice-banner hidden" id="empty-notice-box">
                     <div class="fallback-icon">📂</div>
-                    <h4>This Section is Currently Empty</h4>
-                    <p>Open the Admin Upload menu to add video title cards to this category.</p>
+                    <h4>No Videos Available Here</h4>
+                    <p>Open the Admin Upload menu to load your native PC media files into this view category.</p>
                 </div>
             </section>
         </main>
@@ -59,39 +58,39 @@
     <div class="admin-overlay-modal" id="upload-modal-overlay">
         <div class="modal-box">
             <div class="modal-header-bar">
-                <h3>Add Content to StevenTV</h3>
+                <h3>MuguTV Management Console</h3>
                 <button id="exit-modal-btn" class="close-modal-x">&times;</button>
             </div>
             
             <form id="media-upload-form">
                 <div class="form-input-group">
                     <label>Movie / Show Title</label>
-                    <input type="text" id="input-title" required placeholder="e.g., The Walking Dead">
+                    <input type="text" id="input-title" required placeholder="e.g., Dark">
                 </div>
                 <div class="form-input-group">
-                    <label>Classification Category</label>
+                    <label>Classification Category Type</label>
                     <select id="input-category">
                         <option value="Movie">Movie Blockbuster</option>
                         <option value="Series">TV Show Series</option>
                     </select>
                 </div>
                 <div class="form-input-group">
-                    <label>Select Video File from PC (.mp4)</label>
+                    <label>Select Movie / Episode Video File From PC (.mp4)</label>
                     <input type="file" id="input-video-file" accept="video/mp4" required>
                 </div>
                 <div class="form-input-group">
-                    <label>Select Subtitles File from PC Optional (.vtt)</label>
+                    <label>Select Subtitles File From PC Optional (.vtt)</label>
                     <input type="file" id="input-subtitles-file" accept=".vtt">
                 </div>
                 <div class="form-input-group">
-                    <label>Upload Thumbnail Cover Image File</label>
+                    <label>Upload Thumbnail Cover Image File From PC (.jpg / .png)</label>
                     <input type="file" id="input-thumbnail-file" accept="image/*" required>
                 </div>
                 <div class="form-input-group">
-                    <label>Plot Synopsis Description Details</label>
-                    <textarea id="input-description" rows="3" required placeholder="Provide an engaging summary logline..."></textarea>
+                    <label>Plot Synopsis Description Summary</label>
+                    <textarea id="input-description" rows="3" required placeholder="Provide an engaging summary logline details..."></textarea>
                 </div>
-                <button type="submit" class="modal-submit-btn">Save Content to Vault</button>
+                <button type="submit" class="modal-submit-btn">Save Permanently To Offline Vault</button>
             </form>
         </div>
     </div>
