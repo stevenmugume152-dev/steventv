@@ -10,7 +10,7 @@
 
     <div class="app-container">
 
-        <!-- MovieBox Left Sidebar Navigation Menu drawer panel channels -->
+        <!-- MovieBox Left Sidebar Navigation Menu panel channels -->
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">
                 <div class="menu-toggle-btn" id="sidebar-toggle">☰</div>
@@ -22,6 +22,9 @@
                 <a href="#" class="menu-item" data-layout="Movie">🎬 <span>Movie</span></a>
                 <a href="#" class="menu-item" data-layout="Animation">🎌 <span>Animation</span></a>
                 <a href="#" class="menu-item" data-layout="Sport">⚽ <span>Sport Live</span></a>
+                
+                <!-- VISIBLE LINK BUTTON BROUGHT BACK RIGHT INSIDE THE SIDEBAR MENU DRAWER -->
+                <a href="#" class="menu-item" id="open-admin-btn" style="margin-top: 40px; border-top: 1px solid #28313b; color: #00df89; padding-top: 20px;">🔑 <span>Admin Console</span></a>
             </nav>
         </aside>
 
@@ -38,31 +41,49 @@
                 </div>
             </header>
 
-            <!-- Video Cinema Projection Stage -->
+            <!-- Video Cinema Projection Stage with MovieBox Interactive Episode Selector Panel -->
             <div class="cinema-stage hidden" id="cinema-stage">
-                <div class="video-wrapper">
-                    <video id="main-video" controls autocomplete="off">
-                        <track id="video-track" label="English" kind="subtitles" srclang="en" default>
-                    </video>
-                    <button class="close-cinema-btn" id="close-cinema-btn">✕ Close Player</button>
+                <div class="cinema-split-player-view">
+                    
+                    <!-- Left Core Video Streaming Screen Stage -->
+                    <div class="video-wrapper">
+                        <video id="main-video" controls autocomplete="off">
+                            <track id="video-track" label="English" kind="subtitles" srclang="en" default>
+                        </video>
+                        <button class="close-cinema-btn" id="close-cinema-btn">✕ Close Player</button>
+                    </div>
+
+                    <!-- Right Side Interactive Series Ep Matrix Dashboard Control Panel Room -->
+                    <div class="moviebox-series-resources-box hidden" id="moviebox-series-resources-box">
+                        <div class="resources-header">
+                            <h4>Resources</h4>
+                            <p>Source: local.pc • By: StevenTV</p>
+                        </div>
+                        
+                        <!-- Dynamic Season Navigation Tabs Row Grid -->
+                        <div class="moviebox-season-tabs" id="moviebox-season-tabs"></div>
+
+                        <!-- Dynamic Episode Select Grid Core Channels Matrix -->
+                        <div class="moviebox-episodes-matrix" id="moviebox-episodes-matrix"></div>
+                    </div>
+
                 </div>
+
                 <div class="cinema-details">
                     <h2 id="cinema-title">Movie Title</h2>
                     <p id="cinema-description">Description summary tags info.</p>
                 </div>
             </div>
 
-            <!-- Main Featured Billboard Hero Banner Slider Carousel (Picture 1) -->
+            <!-- Main Featured Billboard Hero Banner Slider Carousel -->
             <section class="hero-slider" id="hero-slider">
                 <button class="slider-arrow prev" id="hero-prev">‹</button>
-                <div class="hero-slide-container" id="hero-slide-container">
-                    <!-- Dynamic Featured Canvas Content Blocks will Inject here -->
-                </div>
+                <div class="hero-slide-container" id="hero-slide-container"></div>
                 <button class="slider-arrow next" id="hero-next">›</button>
                 <div class="slider-dots" id="hero-dots"></div>
             </section>
 
-            <!-- Media Carousel Row Sections Categories Showcase (Picture 2) -->
+            <!-- Media Carousel Row Sections Categories Showcase -->
             <section class="rows-container">
                 <div class="row-section" id="section-movies">
                     <h3 class="row-title">Popular Movies <span class="more-link">More ›</span></h3>
@@ -108,7 +129,6 @@
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
             
-            <!-- Unified Action Control Form View Section -->
             <div id="admin-workspace-hub" class="hidden">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #28313b; padding-bottom: 10px;">
                     <button class="tab-btn active" id="tab-btn-upload">Upload Video File</button>
@@ -116,16 +136,27 @@
                 </div>
 
                 <form id="upload-form">
-                    <div class="form-group"><label>Movie / Episode Title</label><input type="text" id="form-title" required placeholder="e.g., Supergirl"></div>
-                    <div class="form-group">
-                        <label>Layout System Category</label>
-                        <select id="form-category">
-                            <option value="Movie">Movie Blockbuster</option>
-                            <option value="TV Show">TV Show Series</option>
-                            <option value="Animation">Anime & Animation</option>
-                            <option value="Sport">Sport Live Stream</option>
-                        </select>
+                    <div class="form-group"><label>Movie / Episode Title</label><input type="text" id="form-title" required placeholder="Use exact identical name to group seasons/episodes together automatically"></div>
+                    
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>Layout System Category</label>
+                            <select id="form-category">
+                                <option value="Movie">Movie Blockbuster</option>
+                                <option value="TV Show">TV Show Series</option>
+                                <option value="Animation">Anime & Animation</option>
+                                <option value="Sport">Sport Live Stream</option>
+                            </select>
+                        </div>
+                        <div id="episodic-metadata-fields">
+                            <label>Season & Episode Num</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" id="form-season" value="1" min="1" placeholder="S">
+                                <input type="number" id="form-episode" value="1" min="1" placeholder="E">
+                            </div>
+                        </div>
                     </div>
+
                     <div class="form-group"><label>Select Video File from PC (.mp4)</label><input type="file" id="form-video" accept="video/mp4" required></div>
                     <div class="form-group"><label>Select Poster Thumbnail from PC (.jpg / .png)</label><input type="file" id="form-thumb" accept="image/*" required></div>
                     <div class="form-group"><label>Select Subtitles from PC Optional (.vtt)</label><input type="file" id="form-subtitles" accept=".vtt"></div>
