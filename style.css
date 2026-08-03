@@ -66,7 +66,7 @@ body {
     background: linear-gradient(90deg, rgba(0,223,137,0.1) 0%, rgba(28,34,41,0.5) 100%);
 }
 
-/* Right Content Main Display Canvas */
+/* Right Content Main Display Canvas Section */
 .main-content {
     padding: 20px 30px;
     display: flex;
@@ -100,17 +100,88 @@ body {
     border-color: #00df89;
 }
 
-/* Video Cinema Projection Stage */
+/* Large Featured Top Billboard Slider Component Layout Styles */
+.hero-billboard {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center center;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 40px;
+    border: 1px solid #1c2229;
+    transition: background-image 0.5s ease-in-out;
+}
+
+.billboard-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, #0c0f12 5%, rgba(12,15,18,0.3) 70%, rgba(0,0,0,0.1) 100%);
+    z-index: 1;
+}
+
+.billboard-content {
+    position: relative;
+    z-index: 5;
+    max-width: 550px;
+}
+
+.billboard-tag {
+    font-size: 11px;
+    background: #00df89;
+    color: #000;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+#billboard-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 10px 0 6px 0;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+#billboard-desc {
+    font-size: 13px;
+    color: #c2c9d1;
+    line-height: 1.4;
+}
+
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(19,23,28,0.8);
+    color: #fff;
+    border: 1px solid #28313b;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s, color 0.1s;
+}
+
+.slider-nav:hover { background: #00df89; color: #000; }
+.slider-nav.prev { left: 15px; }
+.slider-nav.next { right: 15px; }
+
+/* Video Cinema Projection Stage Layouts */
 .cinema-stage {
     background-color: #05070a;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid #1c2229;
     margin-bottom: 15px;
-}
-
-.cinema-stage.hidden {
-    display: none !important;
 }
 
 .video-wrapper {
@@ -125,12 +196,56 @@ video {
     height: 100%;
 }
 
-/* Closed Captions Subtitling Text Modification Override */
 video::cue {
     background: rgba(0, 0, 0, 0.75);
     color: #fff;
     font-size: 16px;
-    font-weight: 500;
+}
+
+/* Custom Player Horizontal Buttons Ribbon Row Styling Layout */
+.custom-player-controls-bar {
+    background: #13171c;
+    border-bottom: 1px solid #1c2229;
+    padding: 12px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.control-pills-btn {
+    background: #00df89;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.2s;
+}
+
+.control-pills-btn:hover { transform: scale(1.03); }
+
+/* Grouped Multi-Episode Selection Ribbon Folder Scroller */
+.tv-series-room-hub {
+    background: #0d1013;
+    border-top: 1px solid #1c2229;
+    padding: 15px 20px;
+}
+
+.room-hub-heading-title {
+    font-size: 12px;
+    color: #858f99;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.episode-selection-scroller {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
 }
 
 .close-cinema-btn {
@@ -147,46 +262,22 @@ video::cue {
     z-index: 10;
 }
 
-.cinema-details {
-    padding: 20px;
-}
+.cinema-details { padding: 20px; }
+.cinema-details h2 { font-size: 22px; margin-bottom: 8px; }
+.cinema-details p { color: #858f99; font-size: 14px; line-height: 1.4; }
 
-.cinema-details h2 {
-    font-size: 22px;
-    margin-bottom: 8px;
-}
-
-.cinema-details p {
-    color: #858f99;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-/* Media Collection Showcase Rows Grid */
-.rows-container {
-    margin-bottom: 25px;
-}
-
-.row-scroll-container {
+/* REINFORCED WRAPPING GRID: Elements arrange in multiple rows wrapping downwards symmetrically */
+.media-display-flex-grid {
     display: flex;
-    gap: 16px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 20px;
     padding-bottom: 15px;
-    scroll-behavior: smooth;
-    min-height: 150px;
 }
 
-.row-scroll-container::-webkit-scrollbar {
-    height: 6px;
-}
-.row-scroll-container::-webkit-scrollbar-thumb {
-    background-color: #1c2229;
-    border-radius: 10px;
-}
-
-/* Media Cards Components Grid */
+/* Dynamic Media Title Presentation Cards */
 .movie-card {
-    flex: 0 0 180px;
+    flex: 0 1 calc(20% - 16px); /* Generates a structured 5-column grid layout that automatically cascades downwards */
+    min-width: 160px;
     background-color: #13171c;
     border-radius: 10px;
     overflow: hidden;
@@ -196,52 +287,25 @@ video::cue {
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.movie-card:hover {
-    transform: translateY(-4px);
-    border-color: #00df89;
-}
+.movie-card:hover { transform: translateY(-4px); border-color: #00df89; }
+.movie-thumbnail { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+.movie-info { padding: 10px; }
+.movie-card-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.movie-thumbnail {
+/* Custom Category Fallback Notice Empty Component Banner */
+.empty-state-banner {
     width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #13171c;
+    border-radius: 12px;
+    border: 1px dashed #28313b;
+    margin: 20px auto;
 }
 
-.delete-movie-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(229, 9, 20, 0.85);
-    color: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-}
-
-.delete-movie-btn:hover {
-    opacity: 1;
-}
-
-.movie-info {
-    padding: 10px;
-}
-
-.movie-card-title {
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+.fallback-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state-banner h4 { font-size: 18px; margin-bottom: 6px; color: white; }
+.empty-state-banner p { font-size: 13px; color: #858f99; }
 
 /* Administrative Management Password Entry Popup Modal Overlay */
 .admin-modal {
@@ -254,10 +318,7 @@ video::cue {
     z-index: 500;
 }
 
-.admin-modal.active {
-    display: flex !important;
-}
-
+.admin-modal.active { display: flex !important; }
 .modal-content {
     background-color: #13171c;
     border: 1px solid #1c2229;
@@ -268,75 +329,15 @@ video::cue {
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #1c2229;
-    padding-bottom: 10px;
-}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1c2229; padding-bottom: 10px; }
+.close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-size: 12px; color: #858f99; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; background-color: #1c2229; border: 1px solid #28313b; color: white; padding: 10px; border-radius: 6px; }
+.submit-btn { background-color: #00df89; color: #000; font-weight: 700; border: none; width: 100%; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 10px; }
+.error-text { color: #ff4a5a; font-size: 12px; margin-top: 10px; text-align: center; }
+.hidden { display: none !important; }
 
-.close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 12px;
-    color: #858f99;
-    margin-bottom: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    background-color: #1c2229;
-    border: 1px solid #28313b;
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-}
-
-.form-group input[type="file"] {
-    padding: 5px;
-    font-size: 12px;
-}
-
-.submit-btn {
-    background-color: #00df89;
-    color: #000;
-    font-weight: 700;
-    border: none;
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-top: 10px;
-    transition: background 0.2s;
-}
-
-.submit-btn:hover {
-    background-color: #00b871;
-}
-
-.error-text { 
-    color: #ff4a5a; 
-    font-size: 12px; 
-    margin-top: 10px; 
-    text-align: center;
-}
-
-.hidden { 
-    display: none !important; 
-}
+/* Responsive Media Breakdown Rules Queries */
+@media (max-width: 1100px) { .movie-card { flex: 0 1 calc(33.33% - 14px); } }
+@media (max-width: 700px) { .app-container { grid-template-columns: 1fr; } .sidebar { display: none; } .movie-card { flex: 0 1 calc(50% - 10px); } }

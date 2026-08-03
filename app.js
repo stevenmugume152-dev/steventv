@@ -1,6 +1,6 @@
-// 1. Initialize IndexedDB Core Persistent Database Architecture Engine Settings
+// 1. Initialize IndexedDB Engine Settings (Permanent Local Storage Setup Core)
 const DB_NAME = "StevenTVPremiumDB";
-const DB_VERSION = 4; // Version matches your current schema to protect all existing video data
+const DB_VERSION = 4; // Keeps version completely aligned to preserve all your uploaded data safely
 const STORE_NAME = "media_library";
 let db = null;
 
@@ -28,10 +28,11 @@ const closeCinemaBtn = document.getElementById('close-cinema-btn');
 const searchBar = document.getElementById('search-bar');
 const gridMovies = document.getElementById('grid-movies');
 const rowDynamicTitle = document.getElementById('row-dynamic-title');
+const emptyStateBanner = document.getElementById('empty-state-banner');
 
 // Top Slider Billboard Elements Match Selectors Mapping
 const billboardSliderZone = document.getElementById('billboard-slider-zone');
-const heroBillboard = document.getElementById('hero-billboard'); // FIXED: Fixed selector mapping
+const heroBillboard = document.getElementById('hero-billboard');
 const billboardTitle = document.getElementById('billboard-title');
 const billboardDesc = document.getElementById('billboard-desc');
 const billboardPlayBtn = document.getElementById('billboard-play-btn');
@@ -69,6 +70,7 @@ let cachedItems = [];
 let sliderShowcaseItems = [];
 let currentSliderIndex = 0;
 let currentCategoryFilter = "all";
+let autoSliderTimer = null;
 
 function clearStreams() {
     activeStreams.forEach(url => URL.revokeObjectURL(url));
@@ -80,19 +82,17 @@ function targetMediaLoad(movie) {
     clearStreams();
     cinemaStage.classList.remove('hidden');
     
-    // Ensure we handle individual array items if passed directly from click router arrays
-    const targetMovie = Array.isArray(movie) ? movie[0] : movie;
-    if (!targetMovie || !targetMovie.videoBlob) return;
+    if (!movie || !movie.videoBlob) return;
 
-    const videoStream = URL.createObjectURL(targetMovie.videoBlob);
+    const videoStream = URL.createObjectURL(movie.videoBlob);
     activeStreams.push(videoStream);
     mainVideo.src = videoStream;
     
-    cinemaTitle.textContent = targetMovie.title;
-    cinemaDescription.textContent = targetMovie.description;
+    cinemaTitle.textContent = movie.title;
+    cinemaDescription.textContent = movie.description;
 
-    if (targetMovie.subsBlob) {
-        const subsStream = URL.createObjectURL(targetMovie.subsBlob);
+    if (movie.subsBlob) {
+        const subsStream = URL.createObjectURL(movie.subsBlob);
         activeStreams.push(subsStream);
         videoTrack.src = subsStream;
         videoTrack.mode = "showing";
@@ -145,12 +145,13 @@ function loadDashboard() {
         
         currentSliderIndex = 0;
         updateSliderBillboardDisplay();
+        startAutoSliderRotation();
         renderFilteredGrid();
         populateAdminDeletionTerminalList();
     };
 }
 
-// Auto slider update display logic block loop
+// Auto slider update display logic block loop with background intervals transitions
 function updateSliderBillboardDisplay() {
     if (!billboardSliderZone || !billboardTitle || !billboardDesc || !heroBillboard || !billboardPlayBtn) return;
     if (sliderShowcaseItems.length === 0) {
@@ -161,15 +162,24 @@ function updateSliderBillboardDisplay() {
     
     const activeSlide = sliderShowcaseItems[currentSliderIndex];
     billboardTitle.textContent = activeSlide.title;
-    billboardDesc.textContent = activeSlide.description.slice(0, 160) + "...";
+    billboardDesc.textContent = activeSlide.description.slice(0, 140) + "...";
     
     const billboardBG = URL.createObjectURL(activeSlide.thumbBlob);
     activeStreams.push(billboardBG);
-    heroBillboard.style.backgroundImage = `linear-gradient(rgba(12,15,18,0.3), #0c0f12), url('${billboardBG}')`;
+    heroBillboard.style.backgroundImage = `linear-gradient(rgba(12,15,18,0.2), #0c0f12), url('${billboardBG}')`;
     
     billboardPlayBtn.onclick = () => {
         handleMediaCardClickRouting(activeSlide.title, activeSlide);
     };
+}
+
+function startAutoSliderRotation() {
+    clearInterval(autoSliderTimer);
+    if (sliderShowcaseItems.length <= 1) return;
+    autoSliderTimer = setInterval(() => {
+        currentSliderIndex = (currentSliderIndex + 1) % sliderShowcaseItems.length;
+        updateSliderBillboardDisplay();
+    }, 5000); // Transitions showcase titles slides every 5 seconds automatically
 }
 
 if (slideNextBtn && slidePrevBtn) {
@@ -177,16 +187,18 @@ if (slideNextBtn && slidePrevBtn) {
         if (sliderShowcaseItems.length === 0) return;
         currentSliderIndex = (currentSliderIndex + 1) % sliderShowcaseItems.length;
         updateSliderBillboardDisplay();
+        startAutoSliderRotation(); // Reset timer on manual selection click action
     });
     slidePrevBtn.addEventListener('click', () => {
         if (sliderShowcaseItems.length === 0) return;
         currentSliderIndex = (currentSliderIndex - 1 + sliderShowcaseItems.length) % sliderShowcaseItems.length;
         updateSliderBillboardDisplay();
+        startAutoSliderRotation(); // Reset timer on manual selection click action
     });
 }
 
 function renderFilteredGrid() {
-    if (!gridMovies || !rowDynamicTitle) return;
+    if (!gridMovies || !rowDynamicTitle || !emptyStateBanner) return;
     gridMovies.innerHTML = '';
     
     let displayItems = cachedItems;
@@ -194,14 +206,17 @@ function renderFilteredGrid() {
         displayItems = cachedItems.filter(item => item.category === currentCategoryFilter);
         rowDynamicTitle.textContent = `Browsing Collection: ${currentCategoryFilter}s`;
     } else {
-        rowDynamicTitle.textContent = "Your Movie Catalog Presentation Board";
+        rowDynamicTitle.textContent = "Home Catalog — All Uploaded Features";
     }
 
     if (displayItems.length === 0) {
-        gridMovies.innerHTML = `<p style="padding: 20px; color:#858f99; font-style:italic;">No media uploads available in this classification tier section yet.</p>`;
+        emptyStateBanner.classList.remove('hidden');
         return;
+    } else {
+        emptyStateBanner.classList.add('hidden');
     }
 
+    // ACCUMULATOR FOLDER MATRIX: Collects and groups multiple files sharing identical title identifiers together
     const uniqueRoomsAccumulatorMap = {};
     
     displayItems.forEach(item => {
@@ -221,15 +236,4 @@ function renderFilteredGrid() {
         
         const card = document.createElement('div');
         card.className = 'movie-card';
-        const cardThumb = URL.createObjectURL(primaryData.thumbBlob);
-        activeStreams.push(cardThumb);
-        
-        const isSeries = (primaryData.category === "TV Show" || primaryData.category === "Animation") && totalEpisodesCount > 1;
-        const subLabelText = isSeries ? `🗂️ Series Hub Room (${totalEpisodesCount} Videos)` : `${primaryData.category || 'Movie'}`;
-
-        card.innerHTML = `
-            <img class="movie-thumbnail" src="${cardThumb}">
-            <div class="movie-info">
-                <div class="movie-card-title">${primaryData.title}</div>
-
-                ${subLabelText}`;card.addEventListener('click', () => {handleMediaCardClickRouting(primaryData.title, primaryData);});gridMovies.appendChild(card);});}function handleMediaCardClickRouting(baseTitleString, singleItemFallbackObject) {const episodePool = cachedItems.filter(i => i.title.toLowerCase().trim() === baseTitleString.toLowerCase().trim());if (episodePool.length > 1 && tvSeriesRoomHub && episodeSelectionScroller) {tvSeriesRoomHub.classList.remove('hidden');episodeSelectionScroller.innerHTML = '';episodePool.forEach((episodeFile, idx) => {const pill = document.createElement('button');pill.className = 'control-pills-btn';pill.style.background = '#1c2229';pill.style.color = '#fff';pill.style.border = '1px solid #28313b';pill.style.marginRight = '5px';pill.textContent = 📺 Episode [${idx + 1}];pill.addEventListener('click', () => {document.querySelectorAll('.tv-series-room-hub .control-pills-btn').forEach(b => {b.style.background = '#1c2229';b.style.color = '#fff';});pill.style.background = '#00df89';pill.style.color = '#000';targetMediaLoad(episodeFile);});episodeSelectionScroller.appendChild(pill);});targetMediaLoad(episodePool[0]);} else {if (tvSeriesRoomHub) tvSeriesRoomHub.classList.add('hidden');targetMediaLoad(singleItemFallbackObject);}}function populateAdminDeletionTerminalList() {if (!adminDeletionScrollList) return;adminDeletionScrollList.innerHTML = '';if (cachedItems.length === 0) {adminDeletionScrollList.innerHTML = <p style="color:#858f99; font-size:12px; font-style:italic;">No records present to purge.</p>;return;}cachedItems.forEach(item => {const row = document.createElement('div');row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1c2229; padding:8px 12px; border-radius:6px; border:1px solid #28313b; margin-bottom:8px;";row.innerHTML = <div style="font-size:13px; font-weight:bold; color:white;">${item.title} <span style="font-size:10px; color:#858f99; font-weight:normal; margin-left:5px;">(${item.category})</span></div> <button style="background:#ff4a5a; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:4px; cursor:pointer;">Erase</button>;row.querySelector('button').addEventListener('click', () => {if (confirm(Are you absolutely sure you want to delete this entry for "${item.title}"?)) {const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.delete(item.id).onsuccess = () => {loadDashboard();};}});adminDeletionScrollList.appendChild(row);});}// 6. Security Panel Gateway Controllers & Interface Switch Hooksconst STEVENTV_SECRET = "admin123";if (openAdminBtn) {openAdminBtn.addEventListener('click', (e) => {e.preventDefault();adminModal.classList.add('active');if (adminConsoleLayoutHub) adminConsoleLayoutHub.classList.add('hidden');document.getElementById('admin-auth-zone').classList.remove('hidden');adminPassInput.value = "";authErrorMsg.textContent = "";});}if (closeAdminBtn) {closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));}if (btnAuthorize) {btnAuthorize.addEventListener('click', () => {if (adminPassInput.value === STEVENTV_SECRET) {document.getElementById('admin-auth-zone').classList.add('hidden');if (adminConsoleLayoutHub) adminConsoleLayoutHub.classList.remove('hidden');showAdminTabFormSection("upload");} else {authErrorMsg.textContent = "Invalid Admin Key.";}});}function showAdminTabFormSection(viewName) {if (!tabTriggerUpload || !tabTriggerDelete || !uploadForm || !deleteManagementPanelView) return;if (viewName === "upload") {tabTriggerUpload.style.background = "#00df89"; tabTriggerUpload.style.color = "#000";tabTriggerDelete.style.background = "#1c2229"; tabTriggerDelete.style.color = "#fff";uploadForm.classList.remove('hidden');deleteManagementPanelView.classList.add('hidden');} else {tabTriggerDelete.style.background = "#00df89"; tabTriggerDelete.style.color = "#000";tabTriggerUpload.style.background = "#1c2229"; tabTriggerUpload.style.color = "#fff";uploadForm.classList.add('hidden');deleteManagementPanelView.classList.remove('hidden');populateAdminDeletionTerminalList();}}if (tabTriggerUpload && tabTriggerDelete) {tabTriggerUpload.addEventListener('click', () => showAdminTabFormSection("upload"));tabTriggerDelete.addEventListener('click', () => showAdminTabFormSection("delete"));}if (uploadForm) {uploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoInput = document.getElementById('form-video').files[0]; // FIXED: Access exact single file binary indexconst thumbInput = document.getElementById('form-thumb').files[0]; // FIXED: Access exact single file binary indexconst subsInput = document.getElementById('form-subtitles').files[0];if (!videoInput || !thumbInput) {alert("Please ensure both video assets and thumbnail cards are specified properly.");return;}const movieEntry = {id: "media-" + Date.now(),title: document.getElementById('form-title').value.trim(),category: document.getElementById('form-category').value,description: document.getElementById('form-desc').value.trim(),videoBlob: videoInput,thumbBlob: thumbInput,subsBlob: subsInput || null};const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();uploadForm.reset();adminModal.classList.remove('active');alert("${movieEntry.title}" has been saved permanently inside your browser hard drive vault blocks!);};});}// 7. Connect Sidebar Filtering Navigation Click Hooks Channelsdocument.querySelectorAll('.menu-item').forEach(btn => {btn.addEventListener('click', (e) => {if (btn.id === "open-admin-btn") return;e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));btn.classList.add('active');currentCategoryFilter = btn.getAttribute('data-filter');renderFilteredGrid();});});if (searchBar) {searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();if (term === "") {renderFilteredGrid();return;}const baseSet = currentCategoryFilter === "all" ? cachedItems : cachedItems.filter(i => i.category === currentCategoryFilter);const matches = baseSet.filter(m => m.title.toLowerCase().includes(term));if (gridMovies) {gridMovies.innerHTML = '';matches.forEach(item => {const card = document.createElement('div'); card.className = 'movie-card';const cardThumb = URL.createObjectURL(item.thumbBlob);card.innerHTML = <img class="movie-thumbnail" src="${cardThumb}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;card.addEventListener('click', () => targetMediaLoad(item));gridMovies.appendChild(card);});}});}
+const cardThumb = URL.createObjectURL(primaryData.thumbBlob);activeStreams.push(cardThumb);const isSeries = (primaryData.category === "TV Show" || primaryData.category === "Animation") && totalEpisodesCount > 1;const subLabelText = isSeries ? 🗂️ Series Room Folder (${totalEpisodesCount} Videos) : ${primaryData.category || 'Movie'};card.innerHTML = <img class="movie-thumbnail" src="${cardThumb}"> <div class="movie-info"> <div class="movie-card-title">${primaryData.title}</div> <div style="font-size:11px; color:#00df89; margin-top:3px; font-weight:bold;">${subLabelText}</div> </div>;card.addEventListener('click', () => {handleMediaCardClickRouting(primaryData.title, primaryData);});gridMovies.appendChild(card);});}function handleMediaCardClickRouting(baseTitleString, singleItemFallbackObject) {const episodePool = cachedItems.filter(i => i.title.toLowerCase().trim() === baseTitleString.toLowerCase().trim());if (episodePool.length > 1 && tvSeriesRoomHub && episodeSelectionScroller) {tvSeriesRoomHub.classList.remove('hidden');episodeSelectionScroller.innerHTML = '';episodePool.forEach((episodeFile, idx) => {const pill = document.createElement('button');pill.className = 'control-pills-btn';pill.style.background = '#1c2229';pill.style.color = '#fff';pill.style.border = '1px solid #28313b';pill.style.marginRight = '5px';pill.textContent = 📺 Episode [${idx + 1}];pill.addEventListener('click', () => {document.querySelectorAll('.tv-series-room-hub .control-pills-btn').forEach(b => {b.style.background = '#1c2229';b.style.color = '#fff';});pill.style.background = '#00df89';pill.style.color = '#000';targetMediaLoad(episodeFile);});episodeSelectionScroller.appendChild(pill);});// Load up episode one element index slot automatically upon click routing action triggeringtargetMediaLoad(episodePool[0]);} else {if (tvSeriesRoomHub) tvSeriesRoomHub.classList.add('hidden');targetMediaLoad(singleItemFallbackObject);}}function populateAdminDeletionTerminalList() {if (!adminDeletionScrollList) return;adminDeletionScrollList.innerHTML = '';if (cachedItems.length === 0) {adminDeletionScrollList.innerHTML = <p style="color:#858f99; font-size:12px; font-style:italic; padding:10px;">No video records present inside the active storage vault blocks to remove.</p>;return;}cachedItems.forEach(item => {const row = document.createElement('div');row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1c2229; padding:8px 12px; border-radius:6px; border:1px solid #28313b; margin-bottom:8px;";row.innerHTML = <div style="font-size:13px; font-weight:bold; color:white;">${item.title} <span style="font-size:10px; color:#858f99; font-weight:normal; margin-left:5px;">(${item.category})</span></div> <button style="background:#ff4a5a; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:4px; cursor:pointer;">Erase From Drive</button>;row.querySelector('button').addEventListener('click', () => {if (confirm(Are you absolutely sure you want to delete this file entry for "${item.title}" permanently from StevenTV?)) {const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.delete(item.id).onsuccess = () => {loadDashboard();};}});adminDeletionScrollList.appendChild(row);});}// 6. Security Panel Gateway Controllers & Interface Switch Hooksconst STEVENTV_SECRET = "admin123";if (openAdminBtn) {openAdminBtn.addEventListener('click', (e) => {e.preventDefault();adminModal.classList.add('active');if (adminConsoleLayoutHub) adminConsoleLayoutHub.classList.add('hidden');document.getElementById('admin-auth-zone').classList.remove('hidden');adminPassInput.value = "";authErrorMsg.textContent = "";});}if (closeAdminBtn) {closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));}if (btnAuthorize) {btnAuthorize.addEventListener('click', () => {if (adminPassInput.value === STEVENTV_SECRET) {document.getElementById('admin-auth-zone').classList.add('hidden');if (adminConsoleLayoutHub) adminConsoleLayoutHub.classList.remove('hidden');showAdminTabFormSection("upload");} else {authErrorMsg.textContent = "Invalid Admin Key. Clearance Denied.";}});}function showAdminTabFormSection(viewName) {if (!tabTriggerUpload || !tabTriggerDelete || !uploadForm || !deleteManagementPanelView) return;if (viewName === "upload") {tabTriggerUpload.style.background = "#00df89"; tabTriggerUpload.style.color = "#000";tabTriggerDelete.style.background = "#1c2229"; tabTriggerDelete.style.color = "#fff";uploadForm.classList.remove('hidden');deleteManagementPanelView.classList.add('hidden');} else {tabTriggerDelete.style.background = "#00df89"; tabTriggerDelete.style.color = "#000";tabTriggerUpload.style.background = "#1c2229"; tabTriggerUpload.style.color = "#fff";uploadForm.classList.add('hidden');deleteManagementPanelView.classList.remove('hidden');populateAdminDeletionTerminalList();}}if (tabTriggerUpload && tabTriggerDelete) {tabTriggerUpload.addEventListener('click', () => showAdminTabFormSection("upload"));tabTriggerDelete.addEventListener('click', () => showAdminTabFormSection("delete"));}if (uploadForm) {uploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoFilesList = document.getElementById('form-video').files;const thumbFilesList = document.getElementById('form-thumb').files;const subsFilesList = document.getElementById('form-subtitles').files;if (videoFilesList.length === 0 || thumbFilesList.length === 0) {alert("Please ensure both video assets and thumbnail cards are specified properly.");return;}// ABSOLUTE PERSISTENCE PATTERN FIX: Extract the single raw file binary directly out of the FileList wrapperconst movieEntry = {id: "media-" + Date.now(),title: document.getElementById('form-title').value.trim(),category: document.getElementById('form-category').value,description: document.getElementById('form-desc').value.trim(),videoBlob: videoFilesList[0], // Extracting first direct binary element slot safelythumbBlob: thumbFilesList[0], // Extracting first direct binary element slot safelysubsBlob: subsFilesList.length > 0 ? subsFilesList[0] : null};const transaction = db.transaction([STORE_NAME], "readwrite");const store = transaction.objectStore(STORE_NAME);store.add(movieEntry).onsuccess = () => {loadDashboard();uploadForm.reset();adminModal.classList.remove('active');alert("${movieEntry.title}" has been saved permanently inside your browser hard drive vault blocks safely!);};transaction.onerror = (err) => {console.error("Storage transactional fault:", err);alert("Failed to write to your local storage. Your video file might be too large for the current browser workspace thresholds.");};});}// 7. Connect Sidebar Filtering Navigation Click Hooks Channelsdocument.querySelectorAll('.menu-item').forEach(btn => {btn.addEventListener('click', (e) => {if (btn.id === "open-admin-btn") return;e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));btn.classList.add('active');currentCategoryFilter = btn.getAttribute('data-filter');renderFilteredGrid();});});if (searchBar) {searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();if (term === "") {renderFilteredGrid();return;}const baseSet = currentCategoryFilter === "all" ? cachedItems : cachedItems.filter(i => i.category === currentCategoryFilter);const matches = baseSet.filter(m => m.title.toLowerCase().includes(term));if (gridMovies) {gridMovies.innerHTML = '';matches.forEach(item => {const card = document.createElement('div'); card.className = 'movie-card';const cardThumb = URL.createObjectURL(item.thumbBlob);card.innerHTML = <img class="movie-thumbnail" src="${cardThumb}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;card.addEventListener('click', () => targetMediaLoad(item));gridMovies.appendChild(card);});}});}
