@@ -52,18 +52,35 @@ function bootVideoPlayback(movieDataRecord) {
 
     videoTheaterStage.classList.remove('hidden');
     
-    // Safety check ensuring file variants are unpacked from database blocks cleanly into streaming urls channels
+    let videoFile = null;
     if (movieDataRecord.savedVideoBlobData instanceof File || movieDataRecord.savedVideoBlobData instanceof Blob) {
-        const activeVideoTrackStream = URL.createObjectURL(movieDataRecord.savedVideoBlobData);
+        videoFile = movieDataRecord.savedVideoBlobData;
+    } else if (movieDataRecord.savedVideoBlobData instanceof FileList && movieDataRecord.savedVideoBlobData.length > 0) {
+        videoFile = movieDataRecord.savedVideoBlobData[0];
+    } else if (movieDataRecord.savedVideoBlobData && movieDataRecord.savedVideoBlobData[0]) {
+        videoFile = movieDataRecord.savedVideoBlobData[0];
+    }
+
+    if (videoFile) {
+        const activeVideoTrackStream = URL.createObjectURL(videoFile);
         globalRuntimeStreamURLsList.push(activeVideoTrackStream);
         theaterPlayer.src = activeVideoTrackStream;
     }
     
     theaterMovieTitle.textContent = movieDataRecord.title;
-    theaterMovieDesc.textContent = `[Category: ${movieDataRecord.category}] — ${movieDataRecord.description}`;
+    theaterMovieDesc.textContent = movieDataRecord.description || "";
 
-    if (movieDataRecord.savedSubsBlobData && videoTrack && (movieDataRecord.savedSubsBlobData instanceof File || movieDataRecord.savedSubsBlobData instanceof Blob)) {
-        const activeSubsTrackStream = URL.createObjectURL(movieDataRecord.savedSubsBlobData);
+    let subsFile = null;
+    if (movieDataRecord.savedSubsBlobData instanceof File || movieDataRecord.savedSubsBlobData instanceof Blob) {
+        subsFile = movieDataRecord.savedSubsBlobData;
+    } else if (movieDataRecord.savedSubsBlobData instanceof FileList && movieDataRecord.savedSubsBlobData.length > 0) {
+        subsFile = movieDataRecord.savedSubsBlobData[0];
+    } else if (movieDataRecord.savedSubsBlobData && movieDataRecord.savedSubsBlobData[0]) {
+        subsFile = movieDataRecord.savedSubsBlobData[0];
+    }
+
+    if (subsFile && videoTrack) {
+        const activeSubsTrackStream = URL.createObjectURL(subsFile);
         globalRuntimeStreamURLsList.push(activeSubsTrackStream);
         videoTrack.src = activeSubsTrackStream;
         videoTrack.mode = "showing";
@@ -94,6 +111,7 @@ function refreshCatalogDisplay() {
     databaseFetchQuery.onsuccess = () => {
         totalCachedCatalogItems = databaseFetchQuery.result || [];
         renderEcosystemCards();
+        populateAdminDeletionList();
     };
 }
 
@@ -120,46 +138,78 @@ function renderEcosystemCards() {
         const itemCard = document.createElement('div');
         itemCard.className = 'movie-card';
 
-        let dynamicThumbStreamPath = "";
+        let thumbFile = null;
         if (item.savedThumbnailBlobData instanceof File || item.savedThumbnailBlobData instanceof Blob) {
-            dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);
+            thumbFile = item.savedThumbnailBlobData;
+        } else if (item.savedThumbnailBlobData instanceof FileList && item.savedThumbnailBlobData.length > 0) {
+            thumbFile = item.savedThumbnailBlobData[0];
+        } else if (item.savedThumbnailBlobData && item.savedThumbnailBlobData[0]) {
+            thumbFile = item.savedThumbnailBlobData[0];
+        }
+
+        let dynamicThumbStreamPath = "";
+        if (thumbFile) {
+            dynamicThumbStreamPath = URL.createObjectURL(thumbFile);
             globalRuntimeStreamURLsList.push(dynamicThumbStreamPath);
         }
 
+        const standardHasSubs = item.savedSubsBlobData && (
+            item.savedSubsBlobData instanceof File || 
+            item.savedSubsBlobData instanceof Blob || 
+            (item.savedSubsBlobData instanceof FileList && item.savedSubsBlobData.length > 0) ||
+            item.savedSubsBlobData[0]
+        );
+
         itemCard.innerHTML = `
             <img class="movie-thumbnail" src="${dynamicThumbStreamPath}">
-            <button class="delete-record-btn" data-id="${item.id}">✕ Delete</button>
             <div class="movie-info">
                 <div class="movie-card-title">${item.title}</div>
-                <div style="font-size:11px; color:#00df89; font-weight:bold; margin-top:3px;">${item.category} ${item.savedSubsBlobData ? '• Subtitles Included' : ''}</div>
+                <div style="font-size:11px; color:#00df89; font-weight:bold; margin-top:3px;">${item.category} ${standardHasSubs ? '• Subtitles' : ''}</div>
             </div>
         `;
 
-        itemCard.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-record-btn')) return;
+        itemCard.addEventListener('click', () => {
             bootVideoPlayback(item);
-        });
-
-        itemCard.querySelector('.delete-record-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (confirm(`Are you sure you want to delete "${item.title}" from your offline vault?`)) {
-                executeRecordPurge(item.id);
-            }
         });
 
         catalogGridDisplay.appendChild(itemCard);
     });
 }
 
-function executeRecordPurge(recordTargetId) {
-    const writeTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");
-    writeTransaction.objectStore(STORAGE_STORE_NAME).delete(recordTargetId).onsuccess = () => {
-        refreshCatalogDisplay();
-    };
+// 5. Secure Admin Delete Section Generator Logic Block
+function populateAdminDeletionList() {
+    const deletionWrapper = document.getElementById('admin-deletion-zone-list');
+    if (!deletionWrapper) return;
+    deletionWrapper.innerHTML = '';
+
+    if (totalCachedCatalogItems.length === 0) {
+        deletionWrapper.innerHTML = `<p style="color:#858f99; font-size:12px; font-style:italic; padding:5px;">Your database is empty.</p>`;
+        return;
+    }
+
+    totalCachedCatalogItems.forEach(item => {
+        const row = document.createElement('div');
+        row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1c2229; padding:8px 12px; border-radius:6px; border:1px solid #28313b; margin-bottom:8px;";
+        
+        row.innerHTML = `
+            <div style="font-size:13px; font-weight:bold; color:white;">${item.title} <span style="font-size:10px; color:#858f99; font-weight:normal;">(${item.category})</span></div>
+            <button style="background:#ff4a5a; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:4px; cursor:pointer;">✕ Erase</button>
+        `;
+        
+        row.querySelector('button').addEventListener('click', () => {
+            if (confirm(`Are you absolutely sure you want to delete "${item.title}" permanently from MuguTV?`)) {
+                const writeTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");
+                writeTransaction.objectStore(STORAGE_STORE_NAME).delete(item.id).onsuccess = () => {
+                    refreshCatalogDisplay();
+                };
+            }
+        });
+        deletionWrapper.appendChild(row);
+    });
 }
 
-// 5. Interface Layout Modal Toggles & Requested Passcode Security Gate Check Loop
-const STEVENTV_PASSCODE_SECRET = "muguTV123"; // Locked securely to your requested token
+// 6. Interface Layout Modal Toggles & Requested Passcode Security Gate Check Loop
+const STEVENTV_PASSCODE_SECRET = "muguTV123";
 
 if (adminToggleBtn) {
     adminToggleBtn.addEventListener('click', (e) => {
@@ -168,6 +218,7 @@ if (adminToggleBtn) {
         
         if (userEnteredKey === STEVENTV_PASSCODE_SECRET) {
             if (uploadModalOverlay) uploadModalOverlay.classList.add('active');
+            populateAdminDeletionList();
         } else if (userEnteredKey !== null) {
             alert("Clearance Denied: Invalid password code entry sequence.");
         }
@@ -176,49 +227,4 @@ if (adminToggleBtn) {
 
 if (exitModalBtn) {
     exitModalBtn.addEventListener('click', () => {
-        if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');
-    });
-}
-
-// 6. Form Storage Extraction Listener Routine (Unpacking files cleanly from FileLists arrays to clear clone errors)
-if (mediaUploadForm) {
-    mediaUploadForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const videoInputEl = document.getElementById('input-video-file');
-        const subsInputEl = document.getElementById('input-subtitles-file');
-        const thumbInputEl = document.getElementById('input-thumbnail-file');
-
-        if (!videoInputEl || !videoInputEl.files || videoInputEl.files.length === 0 || !thumbInputEl || !thumbInputEl.files || thumbInputEl.files.length === 0) {
-            alert("Please pick your target MP4 movie and cover thumbnail image components from your local drive storage.");
-            return;
-        }
-
-        // Extracts single direct binary items out of FileList wrapper to clear clashing clone loops completely
-        const targetVideoFile = videoInputEl.files[0];
-        const targetImageFile = thumbInputEl.files[0];
-        const targetSubsFile = (subsInputEl && subsInputEl.files && subsInputEl.files.length > 0) ? subsInputEl.files[0] : null;
-
-        const movieDataEntryObject = {
-            id: "mugu-media-" + Date.now(),
-            title: document.getElementById('input-title').value.trim(),
-            category: document.getElementById('input-category').value,
-            savedVideoBlobData: targetVideoFile, 
-            savedThumbnailBlobData: targetImageFile, 
-            savedSubsBlobData: targetSubsFile, 
-            description: document.getElementById('input-description').value.trim()
-        };
-
-        const saveTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");
-        saveTransaction.objectStore(STORAGE_STORE_NAME).add(movieDataEntryObject).onsuccess = () => {
-            refreshCatalogDisplay();
-            mediaUploadForm.reset();
-            if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');
-            alert(`"${movieDataEntryObject.title}" has been saved permanently to your offline local MuguTV space drive library vault!`);
-        };
-        
-        saveTransaction.onerror = () => alert("Storage threshold fault. Try uploading smaller file versions for best web browser performance.");
-    });
-}
-
-// 7. Connect Sidebar Navigation Channels Filter Options Tabs Click Listeners Hooksdocument.querySelectorAll('.nav-item').forEach(buttonNode => {buttonNode.addEventListener('click', (e) => {if (buttonNode.id === "admin-toggle-btn") return;e.preventDefault();document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));buttonNode.classList.add('active');activeInterfaceFilter = buttonNode.getAttribute('data-filter') || "all";renderEcosystemCards();});});if (catalogSearch) {catalogSearch.addEventListener('input', (e) => {const searchTermString = e.target.value.toLowerCase().trim();if (searchTermString === "") {renderEcosystemCards();return;}const filteredMatchesPool = totalCachedCatalogItems.filter(item => {const matchesSearch = item.title && item.title.toLowerCase().includes(searchTermString);const matchesCategory = activeInterfaceFilter === "all" || item.category === activeInterfaceFilter;return matchesSearch && matchesCategory;});if (catalogGridDisplay) {catalogGridDisplay.innerHTML = '';filteredMatchesPool.forEach(item => {const searchItemCard = document.createElement('div');searchItemCard.className = 'movie-card';const dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);searchItemCard.innerHTML = <img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}
+if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');});}// 7. Form Storage Extraction Listener Routineif (mediaUploadForm) {mediaUploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoInputEl = document.getElementById('input-video-file');const subsInputEl = document.getElementById('input-subtitles-file');const thumbInputEl = document.getElementById('input-thumbnail-file');if (!videoInputEl || !videoInputEl.files || videoInputEl.files.length === 0 || !thumbInputEl || !thumbInputEl.files || thumbInputEl.files.length === 0) {alert("Please pick your target MP4 movie and cover thumbnail image components from your local drive storage.");return;}const movieDataEntryObject = {id: "mugu-media-" + Date.now(),title: document.getElementById('input-title').value.trim(),category: document.getElementById('input-category').value,savedVideoBlobData: videoInputEl.files,savedThumbnailBlobData: thumbInputEl.files,savedSubsBlobData: (subsInputEl && subsInputEl.files && subsInputEl.files.length > 0) ? subsInputEl.files : null,description: document.getElementById('input-description').value.trim()};const saveTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");saveTransaction.objectStore(STORAGE_STORE_NAME).add(movieDataEntryObject).onsuccess = () => {refreshCatalogDisplay();mediaUploadForm.reset();if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');alert("${movieDataEntryObject.title}" has been saved permanently to your offline local MuguTV library vault!);};saveTransaction.onerror = () => alert("Storage issue: Try a smaller file size.");});}// 8. Sidebar Connect Layout Filtering Hooksdocument.querySelectorAll('.nav-item').forEach(buttonNode => {buttonNode.addEventListener('click', (e) => {if (buttonNode.id === "admin-toggle-btn") return;e.preventDefault();document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));buttonNode.classList.add('active');activeInterfaceFilter = buttonNode.getAttribute('data-filter') || "all";renderEcosystemCards();});});if (catalogSearch) {catalogSearch.addEventListener('input', (e) => {const searchTermString = e.target.value.toLowerCase().trim();if (searchTermString === "") {renderEcosystemCards();return;}const filteredMatchesPool = totalCachedCatalogItems.filter(item => {const matchesSearch = item.title && item.title.toLowerCase().includes(searchTermString);const matchesCategory = activeInterfaceFilter === "all" || item.category === activeInterfaceFilter;return matchesSearch && matchesCategory;});if (catalogGridDisplay) {catalogGridDisplay.innerHTML = '';filteredMatchesPool.forEach(item => {const searchItemCard = document.createElement('div');searchItemCard.className = 'movie-card';let fileRef = item.savedThumbnailBlobData;let singleFile = (fileRef instanceof FileList && fileRef.length > 0) ? fileRef[0] : fileRef;if (fileRef && fileRef[0]) singleFile = fileRef[0];let dynamicThumbStreamPath = (singleFile instanceof File || singleFile instanceof Blob) ? URL.createObjectURL(singleFile) : "";searchItemCard.innerHTML = <img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}
