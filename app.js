@@ -1,230 +1,259 @@
-// 1. Initialize Permanent IndexedDB Offline Drive Storage Configuration Settings
-const DATABASE_NAME = "MuguTVPermanentVaultDB";
-const DATABASE_VERSION = 1;
-const STORAGE_STORE_NAME = "mugutv_library";
-let localDatabaseConnection = null;
+// 1. Initialize Permanent Storage Database Environment
+const DB_NAME = "StevenTVMovieBoxVaultDB";
+const DB_VERSION = 1;
+const STORE_NAME = "media_vault";
+let db = null;
 
-const dbRequest = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-dbRequest.onupgradeneeded = (event) => {
-    let targetDb = event.target.result;
-    if (!targetDb.objectStoreNames.contains(STORAGE_STORE_NAME)) {
-        targetDb.createObjectStore(STORAGE_STORE_NAME, { keyPath: "id" });
+request.onupgradeneeded = (e) => {
+    let database = e.target.result;
+    if (!database.objectStoreNames.contains(STORE_NAME)) {
+        database.createObjectStore(STORE_NAME, { keyPath: "id" });
     }
 };
 
-dbRequest.onsuccess = (event) => {
-    localDatabaseConnection = event.target.result;
-    refreshCatalogDisplay();
+request.onsuccess = (e) => {
+    db = e.target.result;
+    loadDashboard();
 };
 
-// 2. Element DOM Target Mappings Selectors Mapping Locations Elements
-const theaterPlayer = document.getElementById('theater-player');
+// 2. Element Mappings Selectors Match Channels Nodes
+const mainVideo = document.getElementById('main-video');
 const videoTrack = document.getElementById('video-track');
-const videoTheaterStage = document.getElementById('video-theater-stage');
-const theaterMovieTitle = document.getElementById('theater-movie-title');
-const theaterMovieDesc = document.getElementById('theater-movie-desc');
-const closeTheaterBtn = document.getElementById('close-theater-btn');
-const catalogSearch = document.getElementById('catalog-search');
-const catalogGridDisplay = document.getElementById('catalog-grid-display');
-const currentGridHeaderTitle = document.getElementById('current-grid-header-title');
-const emptyNoticeBox = document.getElementById('empty-notice-box');
+const cinemaStage = document.getElementById('cinema-stage');
+const cinemaTitle = document.getElementById('cinema-title');
+const cinemaDescription = document.getElementById('cinema-description');
+const closeCinemaBtn = document.getElementById('close-cinema-btn');
+const searchBar = document.getElementById('search-bar');
 
-// Modal Elements Target Selectors Mapping Elements
-const uploadModalOverlay = document.getElementById('upload-modal-overlay');
-const adminToggleBtn = document.getElementById('admin-toggle-btn');
-const exitModalBtn = document.getElementById('exit-modal-btn');
-const mediaUploadForm = document.getElementById('media-upload-form');
+const heroSlider = document.getElementById('hero-slider');
+const heroSlideContainer = document.getElementById('hero-slide-container');
+const heroPrev = document.getElementById('hero-prev');
+const heroNext = document.getElementById('hero-next');
+const heroDots = document.getElementById('hero-dots');
 
-let totalCachedCatalogItems = [];
-let activeInterfaceFilter = "all";
-let globalRuntimeStreamURLsList = [];
+const gridAnime = document.getElementById('grid-anime');
+const gridMovies = document.getElementById('grid-movies');
+const gridTvShows = document.getElementById('grid-tvshows');
 
-function flushActiveRuntimeStreams() {
-    globalRuntimeStreamURLsList.forEach(url => URL.revokeObjectURL(url));
-    globalRuntimeStreamURLsList = [];
+// Collapsible sidebar element drawer selectors
+const appSidebar = document.getElementById('app-sidebar');
+const sidebarToggle = document.getElementById('sidebar-toggle');
+
+// Admin Modal overlays selectors mapping
+const adminModal = document.getElementById('admin-modal');
+const closeAdminBtn = document.getElementById('close-admin-btn');
+const adminAuthZone = document.getElementById('admin-auth-zone');
+const adminPassInput = document.getElementById('admin-pass-input');
+const btnAuthorize = document.getElementById('btn-authorize');
+const authErrorMsg = document.getElementById('auth-error-msg');
+const adminWorkspaceHub = document.getElementById('admin-workspace-hub');
+const uploadForm = document.getElementById('upload-form');
+const deletePanelView = document.getElementById('delete-panel-view');
+const adminDeletionScrollList = document.getElementById('admin-deletion-scroll-list');
+const tabBtnUpload = document.getElementById('tab-btn-upload');
+const tabBtnDelete = document.getElementById('tab-btn-delete');
+
+let currentSlideIndex = 0;
+let slideInterval = null;
+let activeStreams = [];
+let cachedAllItems = [];
+let currentCategoryFilter = "all";
+
+function clearStreams() {
+    activeStreams.forEach(url => URL.revokeObjectURL(url));
+    activeStreams = [];
 }
 
-// 3. Central Media Playback Core Routine
-function bootVideoPlayback(movieDataRecord) {
-    flushActiveRuntimeStreams();
-    if (!videoTheaterStage || !theaterPlayer) return;
+// Sidebar responsive layout collapsing drawer toggle trigger listener
+if (sidebarToggle && appSidebar) {
+    sidebarToggle.addEventListener('click', () => {
+        document.querySelector('.app-container').classList.toggle('collapsed-sidebar');
+    });
+}
 
-    videoTheaterStage.classList.remove('hidden');
+// 3. Central Media Deployment Router Engine
+function targetMediaLoad(movie) {
+    clearStreams();
+    cinemaStage.classList.remove('hidden');
     
-    let videoFile = null;
-    if (movieDataRecord.savedVideoBlobData instanceof File || movieDataRecord.savedVideoBlobData instanceof Blob) {
-        videoFile = movieDataRecord.savedVideoBlobData;
-    } else if (movieDataRecord.savedVideoBlobData instanceof FileList && movieDataRecord.savedVideoBlobData.length > 0) {
-        videoFile = movieDataRecord.savedVideoBlobData[0];
-    } else if (movieDataRecord.savedVideoBlobData && movieDataRecord.savedVideoBlobData[0]) {
-        videoFile = movieDataRecord.savedVideoBlobData[0];
-    }
-
-    if (videoFile) {
-        const activeVideoTrackStream = URL.createObjectURL(videoFile);
-        globalRuntimeStreamURLsList.push(activeVideoTrackStream);
-        theaterPlayer.src = activeVideoTrackStream;
-    }
+    const videoStream = URL.createObjectURL(movie.videoBlob);
+    activeStreams.push(videoStream);
+    mainVideo.src = videoStream;
     
-    theaterMovieTitle.textContent = movieDataRecord.title;
-    theaterMovieDesc.textContent = movieDataRecord.description || "";
+    cinemaTitle.textContent = movie.title;
+    cinemaDescription.textContent = movie.description;
 
-    let subsFile = null;
-    if (movieDataRecord.savedSubsBlobData instanceof File || movieDataRecord.savedSubsBlobData instanceof Blob) {
-        subsFile = movieDataRecord.savedSubsBlobData;
-    } else if (movieDataRecord.savedSubsBlobData instanceof FileList && movieDataRecord.savedSubsBlobData.length > 0) {
-        subsFile = movieDataRecord.savedSubsBlobData[0];
-    } else if (movieDataRecord.savedSubsBlobData && movieDataRecord.savedSubsBlobData[0]) {
-        subsFile = movieDataRecord.savedSubsBlobData[0];
-    }
-
-    if (subsFile && videoTrack) {
-        const activeSubsTrackStream = URL.createObjectURL(subsFile);
-        globalRuntimeStreamURLsList.push(activeSubsTrackStream);
-        videoTrack.src = activeSubsTrackStream;
+    if (movie.subsBlob) {
+        const subsStream = URL.createObjectURL(movie.subsBlob);
+        activeStreams.push(subsStream);
+        videoTrack.src = subsStream;
         videoTrack.mode = "showing";
-    } else if (videoTrack) {
+    } else {
         videoTrack.src = "";
         videoTrack.mode = "disabled";
     }
 
-    theaterPlayer.load();
-    theaterPlayer.play().catch(err => console.warn("Interaction required for playback:", err));
-    videoTheaterStage.scrollIntoView({ behavior: 'smooth' });
+    mainVideo.load();
+    mainVideo.play();
+    cinemaStage.scrollIntoView({ behavior: 'smooth' });
 }
 
-if (closeTheaterBtn) {
-    closeTheaterBtn.addEventListener('click', () => {
-        if (theaterPlayer) theaterPlayer.pause();
-        if (videoTheaterStage) videoTheaterStage.classList.add('hidden');
-        flushActiveRuntimeStreams();
-    });
-}
+closeCinemaBtn.addEventListener('click', () => {
+    mainVideo.pause();
+    cinemaStage.classList.add('hidden');
+    clearStreams();
+});
 
-// 4. Grid Presentation Generator Layout Rows Pipelines
-function refreshCatalogDisplay() {
-    if (!localDatabaseConnection) return;
-    const readTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readonly");
-    const databaseFetchQuery = readTransaction.objectStore(STORAGE_STORE_NAME).getAll();
+// 4. Render Dashboard data loops layout layers
+function loadDashboard() {
+    if (!db) return;
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+    const getAllRequest = store.getAll();
 
-    databaseFetchQuery.onsuccess = () => {
-        totalCachedCatalogItems = databaseFetchQuery.result || [];
-        renderEcosystemCards();
-        populateAdminDeletionList();
+    getAllRequest.onsuccess = () => {
+        cachedAllItems = getAllRequest.result || [];
+        buildHeroSlider(cachedAllItems.slice(-4)); // Places latest 4 entries into top banner rotation slider
+        populateCarouselGrids(cachedAllItems);
+        populateAdminDeletionTerminalList();
     };
 }
 
-function renderEcosystemCards() {
-    if (!catalogGridDisplay || !currentGridHeaderTitle || !emptyNoticeBox) return;
-    catalogGridDisplay.innerHTML = '';
+function populateCarouselGrids(items) {
+    gridAnime.innerHTML = '';
+    gridMovies.innerHTML = '';
+    gridTvShows.innerHTML = '';
 
-    let itemsToDisplay = totalCachedCatalogItems;
-    if (activeInterfaceFilter !== "all") {
-        itemsToDisplay = totalCachedCatalogItems.filter(i => i.category === activeInterfaceFilter);
-        currentGridHeaderTitle.textContent = `Browsing Category: ${activeInterfaceFilter} Selection`;
-    } else {
-        currentGridHeaderTitle.textContent = "Home Catalog — All Uploaded Features";
-    }
+    let hasAnime = false, hasMovies = false, hasTv = false;
+    let filteredList = currentCategoryFilter === "all" ? items : items.filter(i => i.category === currentCategoryFilter);
 
-    if (itemsToDisplay.length === 0) {
-        emptyNoticeBox.classList.remove('hidden');
-        return;
-    } else {
-        emptyNoticeBox.classList.add('hidden');
-    }
-
-    itemsToDisplay.forEach(item => {
-        const itemCard = document.createElement('div');
-        itemCard.className = 'movie-card';
-
-        let thumbFile = null;
-        if (item.savedThumbnailBlobData instanceof File || item.savedThumbnailBlobData instanceof Blob) {
-            thumbFile = item.savedThumbnailBlobData;
-        } else if (item.savedThumbnailBlobData instanceof FileList && item.savedThumbnailBlobData.length > 0) {
-            thumbFile = item.savedThumbnailBlobData[0];
-        } else if (item.savedThumbnailBlobData && item.savedThumbnailBlobData[0]) {
-            thumbFile = item.savedThumbnailBlobData[0];
-        }
-
-        let dynamicThumbStreamPath = "";
-        if (thumbFile) {
-            dynamicThumbStreamPath = URL.createObjectURL(thumbFile);
-            globalRuntimeStreamURLsList.push(dynamicThumbStreamPath);
-        }
-
-        const standardHasSubs = item.savedSubsBlobData && (
-            item.savedSubsBlobData instanceof File || 
-            item.savedSubsBlobData instanceof Blob || 
-            (item.savedSubsBlobData instanceof FileList && item.savedSubsBlobData.length > 0) ||
-            item.savedSubsBlobData[0]
-        );
-
-        itemCard.innerHTML = `
-            <img class="movie-thumbnail" src="${dynamicThumbStreamPath}">
+    filteredList.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        const cardThumb = URL.createObjectURL(item.thumbBlob);
+        activeStreams.push(cardThumb);
+        
+        card.innerHTML = `
+            <img class="movie-thumbnail" src="${cardThumb}">
             <div class="movie-info">
                 <div class="movie-card-title">${item.title}</div>
-                <div style="font-size:11px; color:#00df89; font-weight:bold; margin-top:3px;">${item.category} ${standardHasSubs ? '• Subtitles' : ''}</div>
             </div>
         `;
 
-        itemCard.addEventListener('click', () => {
-            bootVideoPlayback(item);
-        });
+        card.addEventListener('click', () => targetMediaLoad(item));
 
-        catalogGridDisplay.appendChild(itemCard);
+        if (item.category === "Animation") { gridAnime.appendChild(card); hasAnime = true; }
+        else if (item.category === "Movie") { gridMovies.appendChild(card); hasMovies = true; }
+        else if (item.category === "TV Show") { gridTvShows.appendChild(card); hasTv = true; }
     });
+
+    document.getElementById('section-anime').style.display = hasAnime ? 'block' : 'none';
+    document.getElementById('section-movies').style.display = hasMovies ? 'block' : 'none';
+    document.getElementById('section-tvshows').style.display = hasTv ? 'block' : 'none';
 }
 
-// 5. Secure Admin Delete Section Generator Logic Block
-function populateAdminDeletionList() {
-    const deletionWrapper = document.getElementById('admin-deletion-zone-list');
-    if (!deletionWrapper) return;
-    deletionWrapper.innerHTML = '';
+// Wire up the side navigation scrolling row arrow click triggers explicitly
+document.querySelectorAll('.row-scroll-wrapper').forEach(wrapper => {
+    const leftArrow = wrapper.querySelector('.left-arrow');
+    const rightArrow = wrapper.querySelector('.right-arrow');
+    const container = wrapper.querySelector('.row-scroll-container');
+    
+    if (leftArrow && rightArrow && container) {
+        leftArrow.addEventListener('click', () => container.scrollLeft -= 240);
+        rightArrow.addEventListener('click', () => container.scrollLeft += 240);
+    }
+});
 
-    if (totalCachedCatalogItems.length === 0) {
-        deletionWrapper.innerHTML = `<p style="color:#858f99; font-size:12px; font-style:italic; padding:5px;">Your database is empty.</p>`;
+// 5. Billboard Hero Carousel Slider Mechanics (Image 1)
+function buildHeroSlider(featuredItems) {
+    heroSlideContainer.innerHTML = '';
+    heroDots.innerHTML = '';
+    clearInterval(slideInterval);
+
+    if (featuredItems.length === 0) {
+        heroSlider.style.display = 'none';
         return;
     }
+    heroSlider.style.display = 'block';
 
-    totalCachedCatalogItems.forEach(item => {
-        const row = document.createElement('div');
-        row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1c2229; padding:8px 12px; border-radius:6px; border:1px solid #28313b; margin-bottom:8px;";
+    featuredItems.forEach((item, index) => {
+        const slide = document.createElement('div');
+        slide.className = `slide-item ${index === 0 ? 'active' : ''}`;
         
-        row.innerHTML = `
-            <div style="font-size:13px; font-weight:bold; color:white;">${item.title} <span style="font-size:10px; color:#858f99; font-weight:normal;">(${item.category})</span></div>
-            <button style="background:#ff4a5a; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:4px; cursor:pointer;">✕ Erase</button>
+        const bgUrl = URL.createObjectURL(item.thumbBlob);
+        activeStreams.push(bgUrl);
+        slide.style.backgroundImage = `url('${bgUrl}')`;
+        
+        slide.innerHTML = `
+            <div class="slide-overlay"></div>
+            <div class="slide-content">
+                <div class="slide-tag">💥 Featured Spotlight</div>
+                <h2 class="slide-title">${item.title}</h2>
+                <p style="color:#bbb; font-size:14px; margin-bottom:15px;">${item.description.slice(0,140)}...</p>
+                <button class="tab-btn" id="hero-play-click-${index}" style="background:#00df89; color:#000; font-weight:bold; border:none; padding:10px 20px;">▶ Watch Features</button>
+            </div>
         `;
-        
-        row.querySelector('button').addEventListener('click', () => {
-            if (confirm(`Are you absolutely sure you want to delete "${item.title}" permanently from MuguTV?`)) {
-                const writeTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");
-                writeTransaction.objectStore(STORAGE_STORE_NAME).delete(item.id).onsuccess = () => {
-                    refreshCatalogDisplay();
-                };
-            }
-        });
-        deletionWrapper.appendChild(row);
+
+        slide.querySelector('button').addEventListener('click', () => targetMediaLoad(item));
+        heroSlideContainer.appendChild(slide);
+
+        const dot = document.createElement('div');
+        dot.className = `dot ${index === 0 ? 'active' : ''}`;
+        dot.addEventListener('click', () => showSlide(index));
+        heroDots.appendChild(dot);
     });
+
+    currentSlideIndex = 0;
+    slideInterval = setInterval(() => showSlide(currentSlideIndex + 1), 6000);
 }
 
-// 6. Interface Layout Modal Toggles & Requested Passcode Security Gate Check Loop
-const STEVENTV_PASSCODE_SECRET = "muguTV123";
+function showSlide(index) {
+    const slides = document.querySelectorAll('.slide-item');
+    const dots = document.querySelectorAll('.dot');
+    if (slides.length === 0) return;
 
-if (adminToggleBtn) {
-    adminToggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const userEnteredKey = prompt("Enter administrative passcode to unlock MuguTV configurations panel form:");
-        
-        if (userEnteredKey === STEVENTV_PASSCODE_SECRET) {
-            if (uploadModalOverlay) uploadModalOverlay.classList.add('active');
-            populateAdminDeletionList();
-        } else if (userEnteredKey !== null) {
-            alert("Clearance Denied: Invalid password code entry sequence.");
+    if (index >= slides.length) index = 0;
+    if (index < 0) index = slides.length - 1;
+
+    slides[currentSlideIndex].classList.remove('active');
+    dots[currentSlideIndex].classList.remove('active');
+    currentSlideIndex = index;
+    slides[currentSlideIndex].classList.add('active');
+    dots[currentSlideIndex].classList.add('active');
+}
+
+if (heroNext && heroPrev) {
+    heroNext.addEventListener('click', () => showSlide(currentSlideIndex + 1));
+    heroPrev.addEventListener('click', () => showSlide(currentSlideIndex - 1));
+}
+
+// 6. Security Panel Hidden Gate Trigger Control loops (Shift Key Double Tap)
+const STEVENTV_SECRET = "muguTV123";
+let lastShiftTapTime = 0;
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === "Shift") {
+        const currentTime = new Date().getTime();
+        if (currentTime - lastShiftTapTime < 500 && currentTime - lastShiftTapTime > 0) {
+            e.preventDefault();
+            adminModal.classList.add('active');
+            adminWorkspaceHub.classList.add('hidden');
+            adminAuthZone.classList.remove('hidden');
+            adminPassInput.value = "";
+            authErrorMsg.textContent = "";
         }
-    });
-}
+        lastShiftTapTime = currentTime;
+    }
+});
 
-if (exitModalBtn) {
-    exitModalBtn.addEventListener('click', () => {
-if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');});}// 7. Form Storage Extraction Listener Routineif (mediaUploadForm) {mediaUploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoInputEl = document.getElementById('input-video-file');const subsInputEl = document.getElementById('input-subtitles-file');const thumbInputEl = document.getElementById('input-thumbnail-file');if (!videoInputEl || !videoInputEl.files || videoInputEl.files.length === 0 || !thumbInputEl || !thumbInputEl.files || thumbInputEl.files.length === 0) {alert("Please pick your target MP4 movie and cover thumbnail image components from your local drive storage.");return;}const movieDataEntryObject = {id: "mugu-media-" + Date.now(),title: document.getElementById('input-title').value.trim(),category: document.getElementById('input-category').value,savedVideoBlobData: videoInputEl.files,savedThumbnailBlobData: thumbInputEl.files,savedSubsBlobData: (subsInputEl && subsInputEl.files && subsInputEl.files.length > 0) ? subsInputEl.files : null,description: document.getElementById('input-description').value.trim()};const saveTransaction = localDatabaseConnection.transaction([STORAGE_STORE_NAME], "readwrite");saveTransaction.objectStore(STORAGE_STORE_NAME).add(movieDataEntryObject).onsuccess = () => {refreshCatalogDisplay();mediaUploadForm.reset();if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');alert("${movieDataEntryObject.title}" has been saved permanently to your offline local MuguTV library vault!);};saveTransaction.onerror = () => alert("Storage issue: Try a smaller file size.");});}// 8. Sidebar Connect Layout Filtering Hooksdocument.querySelectorAll('.nav-item').forEach(buttonNode => {buttonNode.addEventListener('click', (e) => {if (buttonNode.id === "admin-toggle-btn") return;e.preventDefault();document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));buttonNode.classList.add('active');activeInterfaceFilter = buttonNode.getAttribute('data-filter') || "all";renderEcosystemCards();});});if (catalogSearch) {catalogSearch.addEventListener('input', (e) => {const searchTermString = e.target.value.toLowerCase().trim();if (searchTermString === "") {renderEcosystemCards();return;}const filteredMatchesPool = totalCachedCatalogItems.filter(item => {const matchesSearch = item.title && item.title.toLowerCase().includes(searchTermString);const matchesCategory = activeInterfaceFilter === "all" || item.category === activeInterfaceFilter;return matchesSearch && matchesCategory;});if (catalogGridDisplay) {catalogGridDisplay.innerHTML = '';filteredMatchesPool.forEach(item => {const searchItemCard = document.createElement('div');searchItemCard.className = 'movie-card';let fileRef = item.savedThumbnailBlobData;let singleFile = (fileRef instanceof FileList && fileRef.length > 0) ? fileRef[0] : fileRef;if (fileRef && fileRef[0]) singleFile = fileRef[0];let dynamicThumbStreamPath = (singleFile instanceof File || singleFile instanceof Blob) ? URL.createObjectURL(singleFile) : "";searchItemCard.innerHTML = <img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}
+closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('active'));
+
+btnAuthorize.addEventListener('click', () => {
+    if (adminPassInput.value === STEVENTV_SECRET) {
+        adminAuthZone.classList.add('hidden');
+        adminWorkspaceHub.classList.remove('hidden');
+        toggleAdminTabs("upload");
+    } else {
+authErrorMsg.textContent = "Clearance Denied. Key entry invalid.";}});function toggleAdminTabs(tabName) {if (tabName === "upload") {tabBtnUpload.classList.add('active'); tabBtnDelete.classList.remove('active');uploadForm.classList.remove('hidden'); deletePanelView.classList.add('hidden');} else {tabBtnDelete.classList.add('active'); tabBtnUpload.classList.remove('active');uploadForm.classList.add('hidden'); deletePanelView.classList.remove('hidden');populateAdminDeletionTerminalList();}}tabBtnUpload.addEventListener('click', () => toggleAdminTabs("upload"));tabBtnDelete.addEventListener('click', () => toggleAdminTabs("delete"));uploadForm.addEventListener('submit', (e) => {e.preventDefault();const videoInput = document.getElementById('form-video').files;const thumbInput = document.getElementById('form-thumb').files;const subsInput = document.getElementById('form-subtitles').files;if (!videoInput || !thumbInput) return;// DIRECT ITEM EXTRACOR BINARY SCHEMAS: Extracts exact single raw components out of wrappers to preserve file storage forever safelyconst movieEntry = {id: "media-box-id-" + Date.now(),title: document.getElementById('form-title').value.trim(),category: document.getElementById('form-category').value,description: document.getElementById('form-desc').value.trim(),videoBlob: videoInput,thumbBlob: thumbInput,subsBlob: subsInput ? subsInput : null};const transaction = db.transaction([STORE_NAME], "readwrite");transaction.objectStore(STORE_NAME).add(movieEntry).onsuccess = () => {loadDashboard();uploadForm.reset();adminModal.classList.remove('active');alert("${movieEntry.title}" has been saved permanently to your offline StevenTV server hard drive vaults!);};});function populateAdminDeletionTerminalList() {adminDeletionScrollList.innerHTML = '';if (cachedAllItems.length === 0) {adminDeletionScrollList.innerHTML = <p style="color:#858f99; font-size:12px; font-style:italic;">Vault is currently empty.</p>;return;}cachedAllItems.forEach(item => {const row = document.createElement('div');row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:#1c2229; padding:6px 12px; border-radius:6px; border:1px solid #28313b; margin-bottom:6px;";row.innerHTML = <div style="font-size:13px; font-weight:bold; color:white;">${item.title} <span style="font-size:10px; color:#858f99; font-weight:normal;">(${item.category})</span></div> <button style="background:#ff4a5a; color:white; border:none; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:4px; cursor:pointer;">✕ Erase</button>;row.querySelector('button').addEventListener('click', () => {if (confirm(Erase "${item.title}" permanently from StevenTV catalog?)) {const transaction = db.transaction([STORE_NAME], "readwrite");transaction.objectStore(STORE_NAME).delete(item.id).onsuccess = () => loadDashboard();}});adminDeletionScrollList.appendChild(row);});}// 7. Sidebar Dynamic Category Filters Events Wire Hooks Connectionsdocument.querySelectorAll('.menu-item').forEach(item => {item.addEventListener('click', (e) => {e.preventDefault();document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));item.classList.add('active');currentCategoryFilter = item.getAttribute('data-layout');// Hide large hero banner slider when browsing specific layout rows channels explicitlyif (currentCategoryFilter === "all") { heroSlider.style.display = 'block'; }else { heroSlider.style.display = 'none'; }populateCarouselGrids(cachedAllItems);});});searchBar.addEventListener('input', (e) => {const term = e.target.value.toLowerCase().trim();const filteredMatches = cachedAllItems.filter(m => m.title.toLowerCase().includes(term));populateCarouselGrids(filteredMatches);});
