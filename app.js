@@ -1,6 +1,6 @@
 // 1. Initialize Permanent Storage Core System
 const DATABASE_NAME = "StevenTVEasyVaultDB";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2; // Upgraded schema version channel to reset old path fields smoothly
 const STORAGE_STORE_NAME = "steventv_catalog";
 let localDatabaseConnection = null;
 
@@ -8,9 +8,10 @@ const dbRequest = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
 
 dbRequest.onupgradeneeded = (event) => {
     let targetDb = event.target.result;
-    if (!targetDb.objectStoreNames.contains(STORAGE_STORE_NAME)) {
-        targetDb.createObjectStore(STORAGE_STORE_NAME, { keyPath: "id" });
+    if (targetDb.objectStoreNames.contains(STORAGE_STORE_NAME)) {
+        targetDb.deleteObjectStore(STORAGE_STORE_NAME);
     }
+    targetDb.createObjectStore(STORAGE_STORE_NAME, { keyPath: "id" });
 };
 
 dbRequest.onsuccess = (event) => {
@@ -20,6 +21,7 @@ dbRequest.onsuccess = (event) => {
 
 // 2. Element DOM Target Mappings Selectors
 const theaterPlayer = document.getElementById('theater-player');
+const videoTrack = document.getElementById('video-track');
 const videoTheaterStage = document.getElementById('video-theater-stage');
 const theaterMovieTitle = document.getElementById('theater-movie-title');
 const theaterMovieDesc = document.getElementById('theater-movie-desc');
@@ -50,10 +52,25 @@ function bootVideoPlayback(movieDataRecord) {
     if (!videoTheaterStage || !theaterPlayer) return;
 
     videoTheaterStage.classList.remove('hidden');
-    theaterPlayer.src = movieDataRecord.videoUrlPathString;
+    
+    // Generate valid temporary runtime streaming tracks right out of your saved local computer binary fields
+    const activeVideoTrackStream = URL.createObjectURL(movieDataRecord.savedVideoBlobData);
+    globalRuntimeStreamURLsList.push(activeVideoTrackStream);
+    theaterPlayer.src = activeVideoTrackStream;
     
     theaterMovieTitle.textContent = movieDataRecord.title;
     theaterMovieDesc.textContent = `[Category: ${movieDataRecord.category}] — ${movieDataRecord.description}`;
+
+    // Subtitle closed captions track file stream parsing evaluator routine
+    if (movieDataRecord.savedSubsBlobData && videoTrack) {
+        const activeSubsTrackStream = URL.createObjectURL(movieDataRecord.savedSubsBlobData);
+        globalRuntimeStreamURLsList.push(activeSubsTrackStream);
+        videoTrack.src = activeSubsTrackStream;
+        videoTrack.mode = "showing";
+    } else if (videoTrack) {
+        videoTrack.src = "";
+        videoTrack.mode = "disabled";
+    }
 
     theaterPlayer.load();
     theaterPlayer.play().catch(err => {
@@ -106,7 +123,6 @@ function renderEcosystemCards() {
         const itemCard = document.createElement('div');
         itemCard.className = 'movie-card';
 
-        // Reconstruct saved raw thumbnail images back into runtime graphic layers
         const dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);
         globalRuntimeStreamURLsList.push(dynamicThumbStreamPath);
 
@@ -115,7 +131,7 @@ function renderEcosystemCards() {
             <button class="delete-record-btn" data-id="${item.id}">✕ Delete</button>
             <div class="movie-info">
                 <div class="movie-card-title">${item.title}</div>
-                <div style="font-size:11px; color:#858f99; margin-top:3px;">${item.category}</div>
+                <div style="font-size:11px; color:#00df89; font-weight:bold; margin-top:3px;">${item.category} ${item.savedSubsBlobData ? '• Subtitles' : ''}</div>
             </div>
         `;
 
@@ -149,8 +165,6 @@ const STEVENTV_PASSCODE_SECRET = "admin123";
 if (adminToggleBtn) {
     adminToggleBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // Prompt the user for credentials before launching the modal frame channel
         const userEnteredKey = prompt("Enter administrative passcode to unlock StevenTV uploads:");
         
         if (userEnteredKey === STEVENTV_PASSCODE_SECRET) {
@@ -174,22 +188,26 @@ if (mediaUploadForm) {
 
         const titleField = document.getElementById('input-title').value.trim();
         const categoryField = document.getElementById('input-category').value;
-        const pathField = document.getElementById('input-video-path').value.trim();
+        const videoInputEl = document.getElementById('input-video-file');
+        const subsInputEl = document.getElementById('input-subtitles-file');
         const thumbInputEl = document.getElementById('input-thumbnail-file');
 
-        if (!thumbInputEl || !thumbInputEl.files || thumbInputEl.files.length === 0) {
-            alert("Please pick a graphic image file for your movie cover thumbnail.");
+        if (!videoInputEl || !videoInputEl.files || videoInputEl.files.length === 0 || !thumbInputEl || !thumbInputEl.files || thumbInputEl.files.length === 0) {
+            alert("Please select both your MP4 video file and cover thumbnail image from your PC.");
             return;
         }
 
+        const targetVideoBlob = videoInputEl.files[0];
         const targetImageBlob = thumbInputEl.files[0];
+        const targetSubsBlob = (subsInputEl && subsInputEl.files && subsInputEl.files.length > 0) ? subsInputEl.files[0] : null;
 
         const movieDataEntryObject = {
             id: "media-entry-id-" + Date.now(),
             title: titleField,
             category: categoryField,
-            videoUrlPathString: pathField,
-            savedThumbnailBlobData: targetImageBlob, // Stores cleanly into IndexedDB blocks securely
+            savedVideoBlobData: targetVideoBlob, // Stores the complete raw video data into local database memory block
+            savedThumbnailBlobData: targetImageBlob, // Stores raw poster preview card directly
+            savedSubsBlobData: targetSubsBlob, // Stores direct PC subtitling closed captions files (.vtt)
             description: document.getElementById('input-description').value.trim()
         };
 
@@ -200,41 +218,15 @@ if (mediaUploadForm) {
             refreshCatalogDisplay();
             mediaUploadForm.reset();
             if (uploadModalOverlay) uploadModalOverlay.classList.remove('active');
-            alert(`"${movieDataEntryObject.title}" saved successfully to your permanent vault room catalog!`);
+            alert(`"${movieDataEntryObject.title}" has been saved cleanly and permanently to your browser server storage room blocks!`);
+        };
+        
+        saveTransaction.onerror = (err) => {
+            console.error("Storage limitation caught:", err);
+            alert("Storage full: This video file is too large for the default local browser capacity limit. For best results, use smaller file variants.");
         };
     });
 }
 
 // 7. Connect Sidebar Navigation Channels Filter Options Tabs Click Listeners Hooks
-document.querySelectorAll('.nav-item').forEach(buttonNode => {
-    buttonNode.addEventListener('click', (e) => {
-        if (buttonNode.id === "admin-toggle-btn") return;
-        e.preventDefault();
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        buttonNode.classList.add('active');
-        activeInterfaceFilter = buttonNode.getAttribute('data-filter') || "all";
-        renderEcosystemCards();
-    });
-});
-
-if (catalogSearch) {
-    catalogSearch.addEventListener('input', (e) => {
-        const searchTermString = e.target.value.toLowerCase().trim();
-        if (searchTermString === "") {
-            renderEcosystemCards();
-            return;
-        }
-        const filteredMatchesPool = totalCachedCatalogItems.filter(item => {
-            const matchesSearch = item.title && item.title.toLowerCase().includes(searchTermString);
-            const matchesCategory = activeInterfaceFilter === "all" || item.category === activeInterfaceFilter;
-            return matchesSearch && matchesCategory;
-        });
-
-        if (catalogGridDisplay) {
-            catalogGridDisplay.innerHTML = '';
-            filteredMatchesPool.forEach(item => {
-                const searchItemCard = document.createElement('div');
-                searchItemCard.className = 'movie-card';
-                const dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);
-                searchItemCard.innerHTML = `<img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>`;
-searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}
+document.querySelectorAll('.nav-item').forEach(buttonNode => {buttonNode.addEventListener('click', (e) => {if (buttonNode.id === "admin-toggle-btn") return;e.preventDefault();document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));buttonNode.classList.add('active');activeInterfaceFilter = buttonNode.getAttribute('data-filter') || "all";renderEcosystemCards();});});if (catalogSearch) {catalogSearch.addEventListener('input', (e) => {const searchTermString = e.target.value.toLowerCase().trim();if (searchTermString === "") {renderEcosystemCards();return;}const filteredMatchesPool = totalCachedCatalogItems.filter(item => {const matchesSearch = item.title && item.title.toLowerCase().includes(searchTermString);const matchesCategory = activeInterfaceFilter === "all" || item.category === activeInterfaceFilter;return matchesSearch && matchesCategory;});if (catalogGridDisplay) {catalogGridDisplay.innerHTML = '';filteredMatchesPool.forEach(item => {const searchItemCard = document.createElement('div');searchItemCard.className = 'movie-card';const dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);searchItemCard.innerHTML = <img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>;searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}

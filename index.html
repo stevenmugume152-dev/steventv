@@ -8,9 +8,7 @@
 </head>
 <body>
 
-    <!-- Main Web Container Grid -->
     <div class="app-wrapper">
-        
         <!-- Left Fixed Navigation Drawer -->
         <aside class="sidebar">
             <h1 class="logo">Steven<span>TV</span></h1>
@@ -24,8 +22,6 @@
 
         <!-- Right Content Main Display Screen -->
         <main class="main-stage">
-            
-            <!-- Universal Top Header Navigation -->
             <header class="top-nav-bar">
                 <input type="text" id="catalog-search" placeholder="Type to search your collection instantly...">
             </header>
@@ -33,7 +29,10 @@
             <!-- Video Player Theater Canvas -->
             <div class="player-theater-room hidden" id="video-theater-stage">
                 <div class="video-container-box">
-                    <video id="theater-player" controls autocomplete="off"></video>
+                    <video id="theater-player" controls autocomplete="off">
+                        <!-- Dedicated subtitle closed captions container slot link track -->
+                        <track id="video-track" label="English Captions" kind="subtitles" srclang="en" default>
+                    </video>
                     <button class="dismiss-player-btn" id="close-theater-btn">✕ Close Player</button>
                 </div>
                 <div class="theater-text-details">
@@ -45,11 +44,8 @@
             <!-- Dynamic Media Grid Container Section -->
             <section class="media-section">
                 <h3 id="current-grid-header-title">All Uploaded Content</h3>
-                
-                <!-- This grid wraps cards downward automatically into rows when full -->
                 <div class="media-flex-grid" id="catalog-grid-display"></div>
                 
-                <!-- Fallback notice if a category is empty -->
                 <div class="empty-notice-banner hidden" id="empty-notice-box">
                     <div class="fallback-icon">📂</div>
                     <h4>This Section is Currently Empty</h4>
@@ -80,8 +76,12 @@
                     </select>
                 </div>
                 <div class="form-input-group">
-                    <label>Video Stream Source URL / Local File Path Path</label>
-                    <input type="text" id="input-video-path" required placeholder="e.g., C:/Movies/Dark.mp4 or a valid web link">
+                    <label>Select Video File from PC (.mp4)</label>
+                    <input type="file" id="input-video-file" accept="video/mp4" required>
+                </div>
+                <div class="form-input-group">
+                    <label>Select Subtitles File from PC Optional (.vtt)</label>
+                    <input type="file" id="input-subtitles-file" accept=".vtt">
                 </div>
                 <div class="form-input-group">
                     <label>Upload Thumbnail Cover Image File</label>
@@ -89,7 +89,7 @@
                 </div>
                 <div class="form-input-group">
                     <label>Plot Synopsis Description Details</label>
-                    <textarea id="input-description" rows="3" required placeholder="Provide an engaging logline summary details..."></textarea>
+                    <textarea id="input-description" rows="3" required placeholder="Provide an engaging summary logline..."></textarea>
                 </div>
                 <button type="submit" class="modal-submit-btn">Save Content to Vault</button>
             </form>
