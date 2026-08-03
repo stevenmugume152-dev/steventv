@@ -9,7 +9,7 @@
 <body>
 
     <div class="app-container">
-        <!-- Sidebar Drawer Controls Navigation menu Panel -->
+        <!-- Sidebar Drawer Navigation Menu Panel Layout Channels -->
         <aside class="sidebar">
             <h1 class="logo">Steven<span>TV</span></h1>
             <nav class="sidebar-menu">
@@ -21,24 +21,55 @@
             </nav>
         </aside>
 
-        <!-- Main Display Arena Canvas -->
+        <!-- Main Display Arena Canvas Section -->
         <main class="main-content">
             <header class="top-nav">
                 <input type="text" id="search-bar" placeholder="Search your local catalog...">
             </header>
 
-            <!-- Video Projections Theater Stage -->
+            <!-- Top Featured Slideshow Showcase Billboard -->
+            <section class="billboard-slider-zone" id="billboard-slider-zone" style="margin-bottom: 10px;">
+                <div class="hero-billboard" id="hero-billboard">
+                    <div class="billboard-overlay"></div>
+                    <div class="billboard-content">
+                        <span class="billboard-tag">💥 NEW ENTRY</span>
+                        <h2 id="billboard-title">Welcome to StevenTV</h2>
+                        <p id="billboard-desc">Your premium streaming vault engine tracker channel.</p>
+                        <button class="submit-btn" id="billboard-play-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;">▶ Play Feature</button>
+                    </div>
+                    <button class="slider-nav prev" id="slide-prev-btn">‹</button>
+                    <button class="slider-nav next" id="slide-next-btn">›</button>
+                </div>
+            </section>
+
+            <!-- Video Projections Theater Stage Room -->
             <div class="cinema-stage hidden" id="cinema-stage">
                 <div class="video-wrapper">
                     <video id="main-video" controls>
-                        <!-- Dynamic subtitling slot container track link -->
                         <track id="video-track" label="English Captions" kind="subtitles" srclang="en" default>
                     </video>
                     <button class="close-cinema-btn" id="close-cinema-btn">✕ Close Player</button>
                 </div>
+                
+                <!-- Expanded Inline Media Player Control Dashboard Navigation Links Ribbon -->
+                <div class="custom-player-controls-bar">
+                    <button class="control-pills-btn" id="player-btn-play">▶ Play</button>
+                    <button class="control-pills-btn" id="player-btn-pause">⏸ Pause</button>
+                    <button class="control-pills-btn" id="player-btn-rewind">⏪ Back 10s</button>
+                    <button class="control-pills-btn" id="player-btn-forward">⏩ Skip 10s</button>
+                </div>
+
                 <div class="cinema-details">
                     <h2 id="cinema-title">Movie Title</h2>
                     <p id="cinema-description">Description summary tags info.</p>
+                </div>
+
+                <!-- TV Series Hub Episode Matrix Console Room Layout Grid -->
+                <div class="tv-series-room-hub hidden" id="tv-series-room-hub">
+                    <h4 class="room-hub-heading-title">🎞️ Series Episode Navigator Console:</h4>
+                    <div class="episode-selection-scroller" id="episode-selection-scroller">
+                        <!-- Dynamic episode selector pills render channels inline here -->
+                    </div>
                 </div>
             </div>
 
@@ -54,7 +85,7 @@
     <div class="admin-modal" id="admin-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>StevenTV Admin Panel</h3>
+                <h3>StevenTV Admin Management Core</h3>
                 <button id="close-admin-btn" class="close-btn">&times;</button>
             </div>
             
@@ -65,37 +96,56 @@
                 <p id="auth-error-msg" class="error-text"></p>
             </div>
             
-            <form id="upload-form" class="hidden">
-                <div class="form-group">
-                    <label>Movie Title</label>
-                    <input type="text" id="form-title" required>
+            <!-- Unified Storage Deployment Console Core Entry Board Form Layout -->
+            <div id="admin-console-layout-hub" class="hidden">
+                
+                <!-- Action Tab Options Buttons Matrix Groupings -->
+                <div class="admin-tab-bar" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #28313b; padding-bottom: 10px;">
+                    <button class="tab-select-btn active" id="tab-trigger-upload" style="background: #00df89; color: #000; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer;">Add Content</button>
+                    <button class="tab-select-btn" id="tab-trigger-delete" style="background: #1c2229; color: #fff; border: 1px solid #28313b; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer;">Delete Database Records</button>
                 </div>
-                <div class="form-group">
-                    <label>Content Layout Category Mode</label>
-                    <select id="form-category" style="width:100%; background:#1c2229; color:white; padding:10px; border-radius:6px; border:1px solid #28313b;">
-                        <option value="Movie">Movie Blockbuster</option>
-                        <option value="TV Show">TV Show Series</option>
-                        <option value="Animation">Anime & Animation</option>
-                    </select>
+
+                <form id="upload-form">
+                    <div class="form-group">
+                        <label>Series / Movie Base Title</label>
+                        <input type="text" id="form-title" required placeholder="Use exact identical name to place episodes into the same room">
+                    </div>
+                    <div class="form-group">
+                        <label>Content Layout Category Mode</label>
+                        <select id="form-category" style="width:100%; background:#1c2229; color:white; padding:10px; border-radius:6px; border:1px solid #28313b;">
+                            <option value="Movie">Movie Blockbuster</option>
+                            <option value="TV Show">TV Show Series</option>
+                            <option value="Animation">Anime & Animation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Movie Video File (.mp4)</label>
+                        <input type="file" id="form-video" accept="video/mp4" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Poster Thumbnail Graphic (.jpg / .png)</label>
+                        <input type="file" id="form-thumb" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Subtitles Closed Captions File Optional (.vtt)</label>
+                        <input type="file" id="form-subtitles" accept=".vtt">
+                    </div>
+                    <div class="form-group">
+                        <label>Synopses Description details</label>
+                        <textarea id="form-desc" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Save Media File to Local Storage</button>
+                </form>
+
+                <!-- Dedicated Administrative Record Removal Sub-Terminal System -->
+                <div id="delete-management-panel-view" class="hidden">
+                    <p style="font-size: 13px; color: #858f99; margin-bottom: 15px;">Click any item below to erase it permanently from your storage vault hard drive sectors:</p>
+                    <div class="admin-deletion-scroll-list" id="admin-deletion-scroll-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Global database file item entry listings load here dynamically -->
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Select Movie Video File (.mp4)</label>
-                    <input type="file" id="form-video" accept="video/mp4" required>
-                </div>
-                <div class="form-group">
-                    <label>Select Poster Thumbnail Graphic (.jpg / .png)</label>
-                    <input type="file" id="form-thumb" accept="image/*" required>
-                </div>
-                <div class="form-group">
-                    <label>Select Subtitles Closed Captions File Optional (.vtt)</label>
-                    <input type="file" id="form-subtitles" accept=".vtt">
-                </div>
-                <div class="form-group">
-                    <label>Synopses Description details</label>
-                    <textarea id="form-desc" rows="3" required></textarea>
-                </div>
-                <button type="submit" class="submit-btn">Save Media File to Local Storage</button>
-            </form>
+
+            </div>
         </div>
     </div>
 
