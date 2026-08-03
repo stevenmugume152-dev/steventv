@@ -143,11 +143,21 @@ function executeRecordPurge(recordTargetId) {
     };
 }
 
-// 5. Interface Layout Modal Action Toggles
+// 5. Interface Layout Modal Action Toggles & Passcode Security Gateway
+const STEVENTV_PASSCODE_SECRET = "admin123";
+
 if (adminToggleBtn) {
     adminToggleBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (uploadModalOverlay) uploadModalOverlay.classList.add('active');
+        
+        // Prompt the user for credentials before launching the modal frame channel
+        const userEnteredKey = prompt("Enter administrative passcode to unlock StevenTV uploads:");
+        
+        if (userEnteredKey === STEVENTV_PASSCODE_SECRET) {
+            if (uploadModalOverlay) uploadModalOverlay.classList.add('active');
+        } else if (userEnteredKey !== null) {
+            alert("Clearance Denied: Invalid administrative passcode key entry.");
+        }
     });
 }
 
@@ -172,7 +182,6 @@ if (mediaUploadForm) {
             return;
         }
 
-        // Extracts the raw image element out of the FileList format arrays to fix crash faults
         const targetImageBlob = thumbInputEl.files[0];
 
         const movieDataEntryObject = {
@@ -228,9 +237,4 @@ if (catalogSearch) {
                 searchItemCard.className = 'movie-card';
                 const dynamicThumbStreamPath = URL.createObjectURL(item.savedThumbnailBlobData);
                 searchItemCard.innerHTML = `<img class="movie-thumbnail" src="${dynamicThumbStreamPath}"><div class="movie-info"><div class="movie-card-title">${item.title}</div></div>`;
-                searchItemCard.addEventListener('click', () => bootVideoPlayback(item));
-                catalogGridDisplay.appendChild(searchItemCard);
-            });
-        }
-    });
-}
+searchItemCard.addEventListener('click', () => bootVideoPlayback(item));catalogGridDisplay.appendChild(searchItemCard);});}});}
